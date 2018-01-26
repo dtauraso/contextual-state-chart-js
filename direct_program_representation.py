@@ -6,12 +6,11 @@ grids_of_cells = {
 				                    'x':0,
 				                    'y':0,
 				                    'value': '',
-				                    'group_id': -1,  # the group_id's can overlap
+				                    'group_id': -1,
 				                    # edge_terms hold the result of a command that does (x + a, y + b, z + c)
 				                    #slots: [ {commands: ['', ''], edge_terms: [ {x: , y:, z: /*assuemd to be next current_slot implicitely, or set by clicking on a specific slot in cell at (x, y)*/} ]} ] 
-				                    # a value is in each slot so the full history of the computations can be viewed
+				                    # a value is in each slot so the full history of the computations can be viewed be viewing all of the slots
 				                    'slots': [    {'value': '','commands': [], 'edge_term': {'path_id': -1, 'a': 0, 'b': 0, 'c': 0}, 'current_slot': 0, 'current_command': 0}],
-				                    #slot:{commands: [['meaningless'],['nothing happens', 'next non-functioning command']], current_slot: 0, current_command: 0},
 				                    'source':'',
 				                    'start_bound': -1,
 				                    'step':0
@@ -23,7 +22,7 @@ grids_of_cells = {
 		                                'y': 0, 
 		                                'value': 'a',
 		                                'group_id': 0, 
-		                                'slots': [ {'value': '','commands': ['referTo(a=-|source|, b=-1, c=0)'], 'edge_term': {'path_id': 0, 'a': -1, 'b': 1, 'c': 0, }, 'current_slot': 0, 'current_command': 0} ],
+		                                'slots': [ {'value': '','commands': ['duplicateCol(-1)','referTo(a=-|source|, b=-1, c=0)'], 'edge_term': {'path_id': 0, 'a': -1, 'b': 1, 'c': 0, }, 'current_slot': 0, 'current_command': 0} ],
 		                                 # last visited slot
 
 		                                'source': '10',
@@ -73,7 +72,7 @@ grids_of_cells = {
 		                                    'y': 2,
 		                                    'value': 'g',
 		                                    'group_id': 3,
-		                                    'slots': [ {'value': '','commands': ['duplicateCol(-1)',
+		                                    'slots': [ {'value': '','commands': [
 		                                    'computeTemplateInformation(current_path)','store other part of completed pattern(buffer)', 
                                                 'buffer=[]', 'referTo(a=-1, b=-source, c=0)'], 'edge_term': {'path_id': 0, 'a': 0, 'b': 0, 'c': 0}, 'current_slot': 0, 'current_command': 0} ],
 		                                    
@@ -208,17 +207,17 @@ def printEdgeTerm(edge_term):
 def getDataFromCell(cell):
 
 	cell_data = []
-	cell_data.append(''.join(['|', cell['cell_name'] , ' ( ' , str(cell['x']) , ', ', str(cell['y']) , ' ) ', ' |', 'value = ' , cell['value'] , ' |', 'group_id = ' , str(cell['group_id']), '|']))
+	cell_data.append(''.join(['|', cell['cell_name'] , ' ( ' , str(cell['x']) , ', ', str(cell['y']) , ' ) ', ' |', 'value = ' , cell['value'] , ' |', 'group_id = ' , str(cell['group_id'])]))
 
 	slots = cell['slots']
 	
 	for i, slot in enumerate(slots):
 		commands = slot['commands']
 		for j, command in enumerate(commands):
-			cell_data.append(''.join(['|', str(j),  '| ', command, '|']))
-		cell_data.append(''.join(['|', 'edge ',  printEdgeTerm(slot['edge_term']), '|']))
+			cell_data.append(''.join(['|', str(j),  '| ', command]))
+		cell_data.append(''.join(['|', 'edge ',  printEdgeTerm(slot['edge_term'])]))
 
-	cell_data.append(''.join(['|', 'source = ', '\'', cell['source'], '\'', '|']))
+	cell_data.append(''.join(['|', 'source = ', '\'', cell['source'], '\'']))
 
 	return cell_data
 
@@ -275,142 +274,46 @@ def printGrid(graph):
 	# make sure all cells have evenly set dividers
 
 	# uneven transpose 3d
-	col_lengths = [[[len(list_of_cells[j][k][i])
-								for k, n in enumerate(row)]
-							for j, row in enumerate(list_of_cells)]
-						for i, tuple_ in enumerate(list_of_cells[0][0])]
+	col_lengths 		= [[[len(list_of_cells[j][k][i])
+									for k, n in enumerate(row)]
+								for j, row in enumerate(list_of_cells)]
+							for i, tuple_ in enumerate(list_of_cells[0][0])]
 
-	max_for_each_col = [max([max(row)
-							for j, row in enumerate(tuple_)])
-						for i, tuple_ in enumerate(col_lengths)]
+	max_for_each_col 	= [max([max(row) for j, row in enumerate(tuple_)]) for i, tuple_ in enumerate(col_lengths)]
 
 	
 	
-	padding_distances = [[[max_for_each_col[i] - specific_col
-									for k, specific_col in enumerate(x)]
-								for j, x in enumerate(col)]
-							for i, col in enumerate(col_lengths)]
+	padding_distances 	= [[[max_for_each_col[i] - specific_col
+										for k, specific_col in enumerate(x)]
+									for j, x in enumerate(col)]
+								for i, col in enumerate(col_lengths)]
 
 	# inverse 3d transpose uneven
-	pad_distances = [[tuple(padding_distances[i][k][j]
-			for i, n in enumerate(padding_distances))
-		for j, item in enumerate(x)]
-	for k, x in enumerate(padding_distances[0])]
+	pad_distances 		= [[tuple(padding_distances[i][k][j]
+									for i, n in enumerate(padding_distances))
+								for j, item in enumerate(x)]
+							for k, x in enumerate(padding_distances[0])]
 
-	# .join in the most inner part saves a + in the most inner par of the next list comprehension 
-	# .join in this list comprehension allows an offset on the left side of all lines in the code grid
-	list_of_cells = [[[ ''.join(['  ', addPadding(z, pad_distances[a][b][c])])
+	# '.join' in the most inner part saves a '+' in the most inner par of the next list comprehension 
+	# '.join' in this list comprehension allows an offset on the left side of all lines in the code grid
+	list_of_cells 		= [[[ ''.join(['  ', addPadding(z, pad_distances[a][b][c])])
 								for c, z in enumerate(y)]
 							for b, y in enumerate(x)]
 						for a, x in enumerate(list_of_cells)]
 
-	x = [ ''.join( [ '\n'.join( [ '      '.join(a) for a in x ] ), '\n\n\n' ] ) for x in list_of_cells]
+	x = [ ''.join( [ '\n\n'.join( [ '      '.join(a) for a in x ] ), '\n\n\n' ] ) for x in list_of_cells]
 	[print(a) for a in x]
+	return True
 
 def addPadding(string, pad_distance):
 
 
 	return ''.join([string, ''.join([' ' for i in range(pad_distance)]), '|'])
 
-printGrid(grids_of_cells)
-exit()
-def visit(graph, state_trackers, first_tracker_name, first_case_name):
-	# breadth-first traversal
-	# assumes first true case is followed
-	# never did grid_location
-	state_trackers['case_'] = first_case_name
-	# first_tracker_name is not a list
-	next_states = [first_tracker_name]
-	# first_tracker_name is actually the next state to a dummy state
-	i = 0
-	while next_states != []:
-
-		# upper bound for the number of nodes visited
-		if i == 10:
-			quit()
-
-		for next_state in next_states:
-			state_trackers['tracker'] 	= next_state
-			current_state_machine 		= state_trackers['current_state_machine']
-
-			tracker 					= state_trackers['tracker']
-			case_ 						= state_trackers['case_']
-			action_succeded 			= action(graph, state_trackers)
-
-			if action_succeded:
-				# get next states and next case from current state
-				next_set_of_next_states = graph[current_state_machine]['state_graph'][tracker]['next_states']
-
-				if next_set_of_next_states != []:
-					next_states = list(next_set_of_next_states[state_trackers['case_']].keys())
-					
-				else:
-					next_states = []
-					break
-
-
-				# gets the case_ value from the first next state key(the label for the next state is a key, and the case for that next state is the value)
-
-				neighbors 					= graph[current_state_machine]['state_graph'][tracker]['next_states'][case_]
-
-				# the first case could be any number > -1
-				first_case 					= list(neighbors)[0]
-				state_trackers['case_'] 	= neighbors[first_case]
-
-
-				state_trackers['tracker'] 	= next_states[0]
-
-				if state_trackers['next_state_machine'] != state_trackers['current_state_machine']:
-
-					# change the current_state_machine
-					state_trackers['current_state_machine'] = state_trackers['next_state_machine']
-				break
-			
-		i = i + 1
-		# state machine is not done running unless next_state == []
-
-	print('state machine is finished')
-    
-
-def printBreakInSequence(graph, state_trackers):
-
-    start_of_graph = graph[ state_trackers['current_state_machine'] ]['state_graph'][ state_trackers['tracker'] ]['start_of_sub_graph']
-    if start_of_graph:
-    
-       	subgraph_number = state_trackers['subgraph_number'] = state_trackers['subgraph_number'] + 1
-        print(''.join(['\n\n-------------------------------------------------------------\n' , str(subgraph_number) , '\n']))
-    
-
-# this is what the reducer function would be in redux
-def action(graph, state_trackers):
-
-	printBreakInSequence(graph, state_trackers)
-
-	current_state_machine 	= state_trackers['current_state_machine']
-	current_state 			= state_trackers['tracker']
-	case_ 					= state_trackers['case_']
-	indent_level 			= graph[current_state_machine]['indent_level']
-
-	if graph[current_state_machine]['state_machine_action_function'](graph, state_trackers, current_state_machine, current_state, case_):
-		print(''.join(['    ' for i in range(indent_level)]), current_state_machine, current_state, case_)
-		print()
-		return True
-	return False
+#printGrid(grids_of_cells)
+#exit()
 
 	# print(error message, state_trackers['current_state_machine'])
-
-def duplicateDependencyMachineAction(graph, state_trackers, current_state_machine, current_state, case_):
-	# only get function if there is a function for the case
-	if case_ in graph[current_state_machine]['state_graph'][current_state]:
-		state_case_function = graph[current_state_machine]['state_graph'][current_state][case_]
-
-	#state_case_function = graph[current_state_machine]['state_graph'][current_state][case_]
-
-	if current_state == 'start':
-		if case_ == 0:
-			#input_ = graph[current_state_machine]['input']
-			return state_case_function(graph, state_trackers)
-
 def functionStateMachineAction(graph, state_trackers, current_state_machine, current_state, case_):
 
 	input_ = graph[current_state_machine]['input']
@@ -432,7 +335,8 @@ def functionStateMachineAction(graph, state_trackers, current_state_machine, cur
 			the rest of the lines for that state @ case runs the rest of the actions
 			https://en.wikipedia.org/wiki/Comparison_of_synchronous_and_asynchronous_signalling
 			# example
-			# put in an ajax call with a callback here
+			# put in a return ajax call with a callback here
+			# or have a timer run
 
 			'''
 
@@ -454,15 +358,46 @@ def functionStateMachineAction(graph, state_trackers, current_state_machine, cur
 		print('done')
 		return True
 
+def duplicateDependencyMachineAction(graph, state_trackers, current_state_machine, current_state, case_):
+	# only get function if there is a function for the case
+	if case_ in graph[current_state_machine]['state_graph'][current_state]:
+		state_case_function = graph[current_state_machine]['state_graph'][current_state][case_]
+
+	#state_case_function = graph[current_state_machine]['state_graph'][current_state][case_]
+
+	if current_state == 'start':
+		if case_ == 0:
+			#input_ = graph[current_state_machine]['input']
+			return state_case_function(graph, state_trackers)
+
+
+def operate3dGridAction(graph, state_trackers, current_state_machine, current_state, case_):
+
+	# only get function if there is a function for the case
+
+	if case_ in graph[current_state_machine]['state_graph'][current_state]:
+		state_case_function = graph[current_state_machine]['state_graph'][current_state][case_]
+
+	#state_case_function = graph[current_state_machine]['state_graph'][current_state][case_]
+
+	if current_state == 'start':
+		#print('here')
+		#print(state_trackers)
+		return True
+	elif current_state == 'print_3d_grid':
+		#print(state_case_function)
+		#quit()
+		return state_case_function(graph['operate_3d_grid']['grids_of_cells'])
+
 # https://stackoverflow.com/questions/24580993/calling-functions-with-parameters-using-a-dictionary-in-python
 def check(graph, state_trackers, f):
 
 	#print()
 	#print(graph[state_trackers['current_state_machine']]['input'])
-	input_  = graph[state_trackers['current_state_machine']]['input']
-	i = graph[state_trackers['current_state_machine']]['i']
-	function_name = graph[state_trackers['current_state_machine']]['function_name']
-	indent_level = graph[state_trackers['current_state_machine']]['indent_level']
+	input_  		= graph[state_trackers['current_state_machine']]['input']
+	i 				= graph[state_trackers['current_state_machine']]['i']
+	function_name 	= graph[state_trackers['current_state_machine']]['function_name']
+	indent_level 	= graph[state_trackers['current_state_machine']]['indent_level']
 
 	char = input_[i]
 	if f(char):
@@ -538,7 +473,7 @@ state_machine = {
 							# special next state, because it is in duplicate_dependency_machine
 							'copy_function_to_ddm_and_swich_machine_trackers' : [{'duplicateCol_duplicate_dependency_machine': 0}]
 							},
-			'indent_level' : 1,
+			'indent_level' : 2,
 			# treat like this is an inner scope
 			'function_name' : '',
 			'parameters' : {},
@@ -570,7 +505,7 @@ state_machine = {
 							'duplicate_column' : {'start_of_sub_graph' : True, 'next_states'  : [{'computeTemplateInformation': 0}],
 										0: lambda graph, state_machines: function(graph, state_machines)}
 							},
-			'indent_level' : 0,
+			'indent_level' : 1,
 			'state_machine_action_function' : lambda graph, state_trackers, current_state_machine, current_state, case_: 
 													duplicateDependencyMachineAction(graph, state_trackers, current_state_machine, current_state, case_),
 			'type' : 'non_parser'
@@ -578,7 +513,9 @@ state_machine = {
 	},
 	'evaluate_slots' : {
 			#'start'
-			# expand all template formulas
+			# expand all template formulas(duplicate columns)
+			# copy entire grid and put it in a new grid
+			# take duplicate columns and duplicate column and put each source char where it belongs and increment the command index of current slot by 1
 			# run all commands in slot
 			# go to next slot dicted by single edge 
 	},
@@ -586,22 +523,120 @@ state_machine = {
 
 	'operate_3d_grid' : {
 			'state_graph' : {
-				#'start' : 
-				#'print_3d_grid' :
+				'start' : {'start_of_sub_graph' : True, 'next_states'  : [{'print_3d_grid': 0}]},
+
+				'print_3d_grid' : {'start_of_sub_graph' : True, 'next_states'  : [], 0:lambda grids_of_cells: printGrid(grids_of_cells)}
 				#'evaluate_slots'
-			}
-	}
+				},
+		'indent_level' : 0,
+
+		'state_machine_action_function' : lambda graph, state_trackers, current_state_machine, current_state, case_: operate3dGridAction(graph, state_trackers, current_state_machine, current_state, case_),
+		'grids_of_cells' : grids_of_cells
+		}
+	# all functions referenced in 'state_graph' must return true or false
 }
 # this is the action object passed to dispatch in redux
-machine_trackers = { 'current_state_machine': 'duplicate_dependency_machine', # this attribute is changed in a state @ case
+machine_trackers = { 'current_state_machine': 'operate_3d_grid', # this attribute is changed in a state @ case
 	'tracker' : 'start',
 	'case_' : 0,
 	'next_state_machine' : '',
 	'subgraph_number' : -1
 	
 }
+def visit(graph, state_trackers, first_tracker_name, first_case_name):
+	# breadth-first traversal
+	# assumes first true case is followed
+	# never did grid_location
+	state_trackers['case_'] = first_case_name
+	# first_tracker_name is not a list
+	next_states = [first_tracker_name]
+	# first_tracker_name is actually the next state to a dummy state
+	i = 0
+	while next_states != []:
+
+		# upper bound for the number of nodes visited
+		#if i == 2:
+		#	quit()
+
+		for next_state in next_states:
+			state_trackers['tracker'] 	= next_state
+			current_state_machine 		= state_trackers['current_state_machine']
+
+			tracker 					= state_trackers['tracker']
+			case_ 						= state_trackers['case_']
+			action_succeded 			= action(graph, state_trackers)
+
+			if action_succeded:
+				# get next states and next case from current state
+				next_set_of_next_states = graph[current_state_machine]['state_graph'][tracker]['next_states']
+
+				if next_set_of_next_states != []:
+					next_states = list(next_set_of_next_states[state_trackers['case_']].keys())
+					
+				else:
+					next_states = []
+					break
+
+
+				# gets the case_ value from the first next state key(the label for the next state is a key, and the case for that next state is the value)
+
+				neighbors 					= graph[current_state_machine]['state_graph'][tracker]['next_states'][case_]
+
+				# the first case could be any number > -1
+				first_case 					= list(neighbors)[0]
+				state_trackers['case_'] 	= neighbors[first_case]
+
+
+				state_trackers['tracker'] 	= next_states[0]
+
+				if state_trackers['next_state_machine'] != '':
+					if state_trackers['next_state_machine'] != state_trackers['current_state_machine']:
+
+						# change the current_state_machine
+						state_trackers['current_state_machine'] = state_trackers['next_state_machine']
+				break
+		#print(next_states)
+		# 	next_states = []
+
+		#else:
+		#	break		
+		#i = i + 1
+		# state machine is not done running unless next_state == []
+
+	print('state machine is finished')
+    
+
+def makeBreakInSequence(graph, state_trackers):
+
+	#print(state_trackers)
+	#print(graph[state_trackers['current_state_machine']])
+	#print()
+	start_of_graph = graph[ state_trackers['current_state_machine'] ]['state_graph'][ state_trackers['tracker'] ]['start_of_sub_graph']
+	if start_of_graph:
+    
+		subgraph_number = state_trackers['subgraph_number'] = state_trackers['subgraph_number'] + 1
+		return ''.join(['\n\n-------------------------------------------------------------\n' , str(subgraph_number) , '\n'])
+    
+
+# this is what the reducer function would be in redux
+def action(graph, state_trackers):
+
+	print(makeBreakInSequence(graph, state_trackers))
+
+	current_state_machine 	= state_trackers['current_state_machine']
+	current_state 			= state_trackers['tracker']
+	case_ 					= state_trackers['case_']
+	indent_level 			= graph[current_state_machine]['indent_level']
+
+	if graph[current_state_machine]['state_machine_action_function'](graph, state_trackers, current_state_machine, current_state, case_):
+		print(''.join(['    ' for i in range(indent_level)]), current_state_machine, current_state, case_)
+		print()
+		return True
+	return False
+
 visit(state_machine, machine_trackers, 'start', 0)
 
+# this will probably be an action function for the parsing machines(currently one 1 machine is a parsing machine)
 def visitForParsers(graph, state_trackers, first_tracker_name, first_case_name):
 	# breadth-first traversal
 	# assumes first true case is followed
@@ -647,11 +682,11 @@ def visitForParsers(graph, state_trackers, first_tracker_name, first_case_name):
 
 
 				state_trackers['tracker'] 	= next_states[0]
+				if state_trackers['next_state_machine'] != '':
+					if state_trackers['next_state_machine'] != state_trackers['current_state_machine']:
 
-				if state_trackers['next_state_machine'] != state_trackers['current_state_machine']:
-
-					# change the current_state_machine
-					state_trackers['current_state_machine'] = state_trackers['next_state_machine']
+						# change the current_state_machine
+						state_trackers['current_state_machine'] = state_trackers['next_state_machine']
 				break
 			# if action fails
 				# if machine is a parser(all state machines in dict will have a label of either 'parser' or 'non_parser')
