@@ -201,7 +201,7 @@ grids_of_cells = {
 
 def printEdgeTerm(edge_term):
 
-	return 'path_id = '+ str(edge_term['path_id']) + ' ( a= '+ str(edge_term['a'])+ ', b= '+ str(edge_term['b'])+ ', c= '+ str(edge_term['c']) + ')'
+	return ''.join(['path_id = ', str(edge_term['path_id']), ' ( a= ', str(edge_term['a']), ', b= ', str(edge_term['b']), ', c= ', str(edge_term['c']), ')'])
 
 
 def getDataFromCell(cell):
@@ -269,7 +269,7 @@ def printGrid(graph):
 			lines = [''.join(a) for a in cell_data]
 			cell.append(lines)
 
-		list_of_cells.append(zipGeneral(cell, '| |'))
+		list_of_cells.append(zipGeneral(cell, '|'))
 
 	# make sure all cells have evenly set dividers
 
