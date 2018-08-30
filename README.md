@@ -1,4 +1,4 @@
 # Direct-Program-Representation
-This is a work in progress.
+This program uses a hierarchy of state graphs to emulate a calculator. More examples are given.
 
 Use the node start.js command to run
