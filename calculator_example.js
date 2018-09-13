@@ -44,7 +44,7 @@ var isOp = (store, var_store, node) => {
 }
 
 var evaluate = (store, var_store, node) => {
-	
+
 	//console.log(var_store)
 
 	let i = var_store['i']
@@ -81,7 +81,7 @@ var evaluate = (store, var_store, node) => {
 	{
 		var_store['input'].push(after_the_chain[k])
 	}
-	
+
 	var_store['i'] = before_the_chain_len
 
 	return true
@@ -131,7 +131,7 @@ var noMoreInput = (store, var_store, node) => {
 
 	//console.log('at noMoreInput')
 	return endOfInput(store, var_store, node)
-	
+
 }
 
 
@@ -139,7 +139,7 @@ var saveDigit = (store, var_store, node) => {
 	let char = cf.getChar(store, var_store)
 
 	return (char >= '0' && char <= '9')
-	
+
 
 }
 
@@ -184,7 +184,7 @@ var parsing_checks = {
 
 var parents = {
 
-	// only the parent 
+	// only the parent
 	' ' : {'0':{}},
 	'a' : {'0':{'evaluate_expression': '0'}},
 	'op' : {'0':{}},
@@ -247,7 +247,7 @@ var resetForNextRound = (store, var_store, node) => {
 		var_store['i'] = 0
 		return true
 	}
-	
+
 	return false
 }
 
@@ -374,14 +374,14 @@ var validate = (store, var_store, node) => {
 		{
 			return false
 		}
-		
-		return true
-		
 
-		
+		return true
+
+
+
 	}
 	return false
-	
+
 }
 var vars = {
 	'input' : /* passes '1 + 2 + 3 + 4',*//*'1 + 2 + 3 + 4 - 5 + 6 + 7 - 8 - 9 + 10 + 11 + 12',*//*'1+',*//*'1 +2',*/'1 + 2 + 3 + 4 - 5 + 6 * 7 - 8 - 9 + 10 * 11 + 12', // '1 '
@@ -390,7 +390,7 @@ var vars = {
 	'collected_string' : '',
 	'i' : 0,
 	'parents' : parents,
-	
+
 	'operation_vars' : {
 
 		'a' : 0,
@@ -398,12 +398,12 @@ var vars = {
 		'b' : 0},
 
 	'lex_vars' : {
-		'operators' : ['*', '/', '+', '-'],
+		'operators' : ['*', '/', '-', '+'],
 		'j' : 0,
 		'operations' : {'*': mult, '/': divide, '+': plus, '-': minus}},
 	// this control graph uses string for states and cases
 	'node_graph2' : {
-	
+
 			// any next states having {} means it is a finishing state(but having no edges as true signals an error )
 			// {'next': [], 'children':[], 'functions':[]}
 			// {'next': {'0': {}}, 'children':{'0': {}}, 'functions':{'0'}}
@@ -412,7 +412,7 @@ var vars = {
 
 
 
-			'validate' : {'next': {'0': {'evaluate_expression': '0'}}, 'children':{'0': {}}, 'functions':{'0': validate}}, 
+			'validate' : {'next': {'0': {'evaluate_expression': '0'}}, 'children':{'0': {}}, 'functions':{'0': validate}},
 
 
 			'evaluate_expression' : {'next': {'0': {'input_has_1_value':'0','evaluate_expression':'0'}}, 'children':{'0': {'a':'0'}}, 'functions':{'0': returnTrue}},
@@ -431,7 +431,7 @@ var vars = {
 				'char': {'next': {'0': {'last_to_save': '0', 'char': '0', 'save': '0'}}, 'children':{'0': {}}, 'functions':{'0':collectChar}},
 
 				'save': {'next': {'0': {' ': '0'}}, 'children':{'0': {}}, 'functions':{'0':save}},
-				
+
 				' ' : 	{'next': {'0':{' ':'0','init':'0'}}, 	'children':{'0':{}}, 	'functions':{'0':cf.parseChar}},
 
 
@@ -460,8 +460,8 @@ var vars = {
 
 
 				'invalid' : {'next': {'0': {}}, 'children':{'0': {}}, 'functions':{'0': inputIsInvalid}}
-				
-			
+
+
 
 
 
