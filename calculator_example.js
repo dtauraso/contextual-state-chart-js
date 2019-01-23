@@ -39,7 +39,7 @@ var isOp = (store, var_store, node) => {
 	//console.log(input[i])
 	let j = var_store['lex_vars']['j']
 	let operators = var_store['lex_vars']['operators']
-	return input[i] == operators[j]
+	return input[i] === operators[j]
 
 }
 
@@ -95,7 +95,7 @@ var ignoreOp = (store, var_store, node) => {
 	let j = var_store['lex_vars']['j']
 	let operators = var_store['lex_vars']['operators']
 	//console.log(operators[j])
-	//console.log((input[i] == operators[j]))
+	//console.log((input[i] === operators[j]))
 	// need to prove input[i] is an operator, but not operators[j]
 	//console.log(input[i], operators.includes(input[i]))
 	if (endOfInput(store, var_store, node))
@@ -149,7 +149,7 @@ var saveDigit = (store, var_store, node) => {
 
 var isWhiteSpace = (store, var_store) => {
 
-	return cf.getChar(store, var_store) == ' '
+	return cf.getChar(store, var_store) === ' '
 }
 
 
@@ -209,26 +209,7 @@ var parents = {
 	'init' : {'0':{}}
 }
 
-/*
-	'split'
-	'validate'
-	'evaluate_expression'
-	'reset_for_next_round_of_input'
-	'end_of_evaluating'
-	'input_has_1_value'
-	'char'
-	'save'
-	' '
-	'init'
-	'last_to_save'
-	'a'
-	'op'
-	'b'
-	'op_ignore'
-	'value_ignore'
-	'error'
-	'invalid'
-*/
+
 
 var returnTrue = (store, var_store, node) => {
 	return true
@@ -254,7 +235,7 @@ var resetForNextRound = (store, var_store, node) => {
 var showAndExit = (store, var_store, node) => {
 
 	let input = var_store['input']
-	if(input.length == 1)
+	if(input.length === 1)
 	{
 		console.log(input[0])
 		return true
@@ -285,7 +266,7 @@ var save = (store, var_store, node) => {
 
 	let i = var_store['i']
 	let input = var_store['input']
-	if (input[i] == ' ')
+	if (input[i] === ' ')
 	{
 		let collected_string = var_store['collected_string']
 		var_store['expression'].push(collected_string)
@@ -343,7 +324,7 @@ var validate = (store, var_store, node) => {
 
 	if (input.length >= 3)
 	{
-		if (Number(input[0]) == NaN)
+		if (Number(input[0]) === NaN)
 		{
 
 			return false
@@ -351,7 +332,7 @@ var validate = (store, var_store, node) => {
 		while (i < input.length)
 		{
 			// 2, 4, 6
-			if (i % 2 == 1)
+			if (i % 2 === 1)
 			{
 
 				if (!var_store['lex_vars']['operators'].includes(input[i]))
@@ -362,7 +343,7 @@ var validate = (store, var_store, node) => {
 			// 1, 3, 5
 			else
 			{
-				if (Number(input[i]) == NaN)
+				if (Number(input[i]) === NaN)
 				{
 					return false
 				}
@@ -370,7 +351,7 @@ var validate = (store, var_store, node) => {
 
 			i += 1
 		}
-		if (Number(input[input.length - 1]) == NaN)
+		if (Number(input[input.length - 1]) === NaN)
 		{
 			return false
 		}

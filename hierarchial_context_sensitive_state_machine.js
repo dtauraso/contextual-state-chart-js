@@ -76,7 +76,7 @@ exports.printStack = (bottom) => {
 
 	var tracker = bottom[0]
 	var stack = []
-	while (tracker != null)
+	while (tracker !== null)
 	{
 		stack.unshift(tracker.child)
 		tracker = tracker.parent
@@ -94,8 +94,12 @@ exports.isBottomAtTheParentOfCurrentState = (parent_cases, bottom_state, bottom_
 		let parent = parent_cases[p][0]
 
 		let parent_case = parent_cases[p][1]
+		//console.log(bottom_state, parent, bottom_case, parent_case)
+		//console.log(bottom_state == parent, bottom_case == parent_case)
+		//console.log(bottom_state === parent, bottom_case === parent_case)
+		//console.log(typeof(bottom_state), typeof(parent), typeof(bottom_case), typeof(parent_case))
 
-		if(bottom_state == parent && bottom_case == parent_case)
+		if(bottom_state === parent && bottom_case === parent_case)
 		{
 			return true
 		}
@@ -108,19 +112,19 @@ exports.getNextStates = (tracker, continuing_next_states, indents, graph) => {
 	var case1 = tracker.child[1]
 
 	// todo: need to delete the bottom of the list as we ascend it, not ignore it
-	while (tracker != null && continuing_next_states.length == 0)
+	while (tracker !== null && continuing_next_states.length === 0)
 	{
 		indents -= 1
 		tracker = tracker.parent
 		state1 = tracker.child[0]
 		case1 = tracker.child[1]
 		// need to exit the main loop
-		if (state1 == 'root')
+		if (state1 === 'root')
 		{
 			continuing_next_states = []
 			return [tracker, continuing_next_states, indents]
 		}
-			
+
 		continuing_next_states = Object.entries(graph['node_graph2'][state1]['next'][case1])
 
 	}
@@ -134,7 +138,7 @@ exports.makeNextStates = (next_states) => {
 
 	for(var n in next_states)
 	{
-		if (typeof(next_states[n][1]) == 'object')
+		if (typeof(next_states[n][1]) === 'object')
 		{
 			let next_state = next_states[n][0]
 			for(var o in next_states[n][1])
@@ -143,19 +147,19 @@ exports.makeNextStates = (next_states) => {
 
 			}
 
-		}								
+		}
 		else
 		{
 			new_nex_states.push([next_states[n][0], next_states[n][1]])
 		}
 
 	}
-	
+
 	return new_nex_states
 }
 exports.printLevel = (graph, state, case_, indents, m, chosen_level) => {
 
-	if (indents == chosen_level)
+	if (indents === chosen_level)
 	{
 		console.log(exports.getIndents(indents), '|'+ state + '|', case_, 'passed', 'i', '|' + graph['input'][m] + '|', m)
 
@@ -181,7 +185,7 @@ exports.printLevelsBounds = (graph, state, case_, indents, m, input_length, chos
 		//console.log()
 
 	}
-	else if (indents >= chosen_start_level && chosen_end_level == -1)
+	else if (indents >= chosen_start_level && chosen_end_level === -1)
 	{
 		console.log(exports.getIndents(indents), '('+ state + ',' , case_ + ',', 'f=' + graph['node_graph2'][state]['functions'][case_].name + ',', indents + ')')//, '|' + graph['input'][m] + '|'/*,'i ='*/, m/*, input_length*/)
 		//console.log()
@@ -205,7 +209,7 @@ exports.visitRedux = (node, store, graph, indents) => {
     var action = {}
 	var bottom = []
 	// assumes [state, case_] actually runs
-	let parent = new ChildParent(['root', 0], null)
+	let parent = new ChildParent(['root', '0'], null)
 	bottom.push(parent)
 	var ii = 0
 	//console.log(getIndents(indents), 'start state', node)
@@ -217,9 +221,9 @@ exports.visitRedux = (node, store, graph, indents) => {
         {
             fail
         }
-        
+
 		//console.log(getIndents(indents), 'next_states', next_states)
-        
+
 		var state = ''
 		var case_ = 0
 		var state_changed = false
@@ -232,7 +236,7 @@ exports.visitRedux = (node, store, graph, indents) => {
 			case_ = next_states[j][1]
             action = {type: state, case_: case_}
             store.dispatch(action)
-            
+
 			let maybe_parent = graph['node_graph2'][ state ]['children'][ case_ ]
 			let recursive_option = graph['recursive_option']
 			// seems to work on functions of the form f(x)
@@ -262,10 +266,10 @@ exports.visitRedux = (node, store, graph, indents) => {
 						bottom[0] = new_parent
 						indents += 1
 					}
-					
-					
+
+
 				}
-				
+
 				// for when passing the current state(it is in the current next states) has a child(called next states)
 				if (exports.isParent(maybe_parent))
 				{
@@ -283,7 +287,7 @@ exports.visitRedux = (node, store, graph, indents) => {
 
 					let m = graph['i']
 					exports.printLevelsBounds(graph, state, case_, indents, m, graph['input'].length, 0, -1)
-					
+
 
 
 				}
@@ -310,7 +314,7 @@ exports.visitRedux = (node, store, graph, indents) => {
         }
 
 		//printStack(bottom)
-		if (next_states.length == 0)
+		if (next_states.length === 0)
 		{
 			// have linked list representing the stack
 			// first item is in bottom[0]
@@ -340,7 +344,7 @@ exports.visitRedux = (node, store, graph, indents) => {
         if(!state_changed && next_states.length > 0)
         {
 
-			
+
             console.log(next_states, 'have failed so your state machine is incomplete')
             fail
         }

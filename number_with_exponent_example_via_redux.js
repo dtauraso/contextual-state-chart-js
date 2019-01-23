@@ -52,8 +52,8 @@ let parsing_checks2 = {
 let parents2 = {
 
 
-	'number' : [{'root': 0} ],
-	'-' : [{'number': 0}],
+	'number' : [{'root': '0'} ],
+	'-' : [{'number': '0'}],
 	'#' : [{}],
 	'x' : [{}],
 	'exponent' : [{}],
@@ -74,17 +74,17 @@ var end = (store, var_store) => {
 // this control graph uses string for states and number for case
 let node_graph2_ = {
 
-	'number' : 	{'next': [{'x':0}], 'children':[{'-': 0}], 'functions':[doesNothing]},
-	'x' : 		{'next': [{'exponent':0, '*':0}], 'children':[{}], 'functions':[cf.parseChar]},
-	'exponent' :  {'next': [{'number':0}], 'children':[{}], 'functions':[cf.parseChar]},
-	'*' : 			{'next': [{'end':0}], 'children':[{}], 'functions':[cf.parseChar]},
+	'number' : 	{'next': [{'x':'0'}], 'children':[{'-': '0'}], 'functions':[doesNothing]},
+	'x' : 		{'next': [{'exponent':'0', '*':'0'}], 'children':[{}], 'functions':[cf.parseChar]},
+	'exponent' :  {'next': [{'number':'0'}], 'children':[{}], 'functions':[cf.parseChar]},
+	'*' : 			{'next': [{'end':'0'}], 'children':[{}], 'functions':[cf.parseChar]},
 
 	// parses the number
-	'-' : 	{'next': [{'#':0}], 'children':[{}], 'functions':[cf.parseChar]},
-	'#'  : 		{'next': [{'#':0, 'end_of#':0}], 'children':[{}], 'functions':[cf.parseChar]},
+	'-' : 	{'next': [{'#':'0'}], 'children':[{}], 'functions':[cf.parseChar]},
+	'#'  : 		{'next': [{'#':'0', 'end_of#':'0'}], 'children':[{}], 'functions':[cf.parseChar]},
 	'end_of#': 		{'next':[{}], 'children': [{}], 'functions' : [cf.isNotDigit]},
 	'end' : {'next': [{}], 'children':[{}], 'functions':[end]}
-	
+
 }
 
 
@@ -115,5 +115,5 @@ var nodeReducer3 = (state = {state_machine}, action) => {
 
 
 var recursive_reducer = createStore(nodeReducer3)
-hcssm.visitRedux(['number', 0], recursive_reducer, state_machine, 0)
+hcssm.visitRedux(['number', '0'], recursive_reducer, state_machine, 0)
 console.log('done w machine')
