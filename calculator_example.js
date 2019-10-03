@@ -1,6 +1,9 @@
-import { createStore } from 'redux'
-import * as hcssm from './hierarchial_context_sensitive_state_machine.js'
-import * as cf from './common_functions.js'
+//var createStore = require('redux')
+//import createStore from 'redux'
+var hcssm = require('./hierarchial_context_sensitive_state_machine')
+//import * as hcssm from './hierarchial_context_sensitive_state_machine.js'
+var cf = require('./common_functions')
+//import * as cf from './common_functions.js'
 
 
 
@@ -182,32 +185,7 @@ var parsing_checks = {
 
 }
 
-var parents = {
 
-	// only the parent
-	' ' : {'0':{}},
-	'a' : {'0':{'evaluate_expression': '0'}},
-	'op' : {'0':{}},
-	'b' : {'0':{}, 'evaluate':{}},
-	'op_ignore' : {'0':{}},
-	'value_ignore' : {'0':{'ignore':'0'}, 'valid_op': {}},
-	'error' : {'0':{}},
-	'invalid' : {'0': {}},
-	'validate' : {'0':{}},
-	'evaluate_expression' : {'0':{}},
-
-	'reset_for_next_round_of_input' : {'0':{}},
-	'end_of_evaluating' : {'0':{}},
-	'input_has_1_value':{'0':{}},
-
-	'split' : {'0':{'root':'0'}},
-
-	'char': {'0':{'split':'0'}},
-	'last_to_save' : {'0':{}},
-
-	'save' : {'0':{}},
-	'init' : {'0':{}}
-}
 
 
 
@@ -364,13 +342,40 @@ var validate = (store, var_store, node) => {
 	return false
 
 }
+
+//var parents = {
+
+	// only the parent
+//	' ' : {'0':{}},
+//	'a' : {'0':{'evaluate_expression': '0'}},
+//	'op' : {'0':{}},
+//	'b' : {'0':{}, 'evaluate':{}},
+//	'op_ignore' : {'0':{}},
+//	'value_ignore' : {'0':{'ignore':'0'}, 'valid_op': {}},
+//	'error' : {'0':{}},
+//	'invalid' : {'0': {}},
+//	'validate' : {'0':{}},
+//	'evaluate_expression' : {'0':{}},
+
+//	'reset_for_next_round_of_input' : {'0':{}},
+//	'end_of_evaluating' : {'0':{}},
+//	'input_has_1_value':{'0':{}},
+
+//	'split' : {'0':{'root':'0'}},
+
+//	'char': {'0':{'split':'0'}},
+//	'last_to_save' : {'0':{}},
+
+//	'save' : {'0':{}},
+//	'init' : {'0':{}}
+//}
 var vars = {
 	'input' : /* passes '1 + 2 + 3 + 4',*//*'1 + 2 + 3 + 4 - 5 + 6 + 7 - 8 - 9 + 10 + 11 + 12',*//*'1+',*//*'1 +2',*/'1 + 2 + 3 + 4 - 5 + 6 * 7 - 8 - 9 + 10 * 11 + 12', // '1 '
 	// 10 - 18 - 8 - 42
 	'expression' : [],
 	'collected_string' : '',
 	'i' : 0,
-	'parents' : parents,
+	//'parents' : parents,
 
 	'operation_vars' : {
 
@@ -389,58 +394,130 @@ var vars = {
 			// {'next': [], 'children':[], 'functions':[]}
 			// {'next': {'0': {}}, 'children':{'0': {}}, 'functions':{'0'}}
 
-			'split' :{'next': {'0': {'validate':'0', 'invalid':'0'}}, 'children':{'0': {'char':'0'}}, 'functions':{'0':returnTrue}},
+			'split' :
+				{'next': {'0': {'validate':'0', 'invalid':'0'}},
+				'children': {'0': {'char':'0'}},
+				'functions':{'0':returnTrue},
+				'parents' :{'0':{'root':'0'}}},
 
 
 
-			'validate' : {'next': {'0': {'evaluate_expression': '0'}}, 'children':{'0': {}}, 'functions':{'0': validate}},
+			'validate' :
+				{'next': {'0': {'evaluate_expression': '0'}},
+				'children':{'0': {}}, 
+				'functions':{'0': validate},
+				'parents' :{'0':{}}},
 
 
-			'evaluate_expression' : {'next': {'0': {'input_has_1_value':'0','evaluate_expression':'0'}}, 'children':{'0': {'a':'0'}}, 'functions':{'0': returnTrue}},
+			'evaluate_expression' :
+				{'next': {'0': {'input_has_1_value':'0','evaluate_expression':'0'}},
+				'children':{'0': {'a':'0'}},
+				'functions':{'0': returnTrue},
+				'parents' :{'0':{}}},
 
 
 
-			'reset_for_next_round_of_input': {'next': {'0': {'end_of_evaluating': '0'}}, 'children':{'0':{}}, 'functions':{'0':resetForNextRound}},
+			'reset_for_next_round_of_input':
+				{'next': {'0': {'end_of_evaluating': '0'}},
+				'children':{'0':{}},
+				'functions':{'0':resetForNextRound},
+				'parents': {'0':{}}},
 
 
-			'end_of_evaluating' : {'next': {'0': {}}, 'children':{'0': {}}, 'functions':{'0':returnTrue}},
+			'end_of_evaluating' :
+				{'next': {'0': {}},
+				'children':{'0': {}},
+				'functions':{'0':returnTrue},
+				'parents':	{'0':{}}},
 
-			'input_has_1_value' : {'next': {'0': {}}, 'children':{'0': {}}, 'functions':{'0':showAndExit}},
+			'input_has_1_value' :
+				{'next': {'0': {}},
+				'children':{'0': {}},
+				'functions':{'0':showAndExit},
+				'parents': {'0':{}}},
 
 
 				// split
-				'char': {'next': {'0': {'last_to_save': '0', 'char': '0', 'save': '0'}}, 'children':{'0': {}}, 'functions':{'0':collectChar}},
+				'char':
+					{'next': {'0': {'last_to_save': '0', 'char': '0', 'save': '0'}},
+					'children':{'0': {}},
+					'functions':{'0':collectChar},
+					'parents': {'0':{'split':'0'}}}, // actually needs parents because it's the first state checked from split
 
-				'save': {'next': {'0': {' ': '0'}}, 'children':{'0': {}}, 'functions':{'0':save}},
+				'save':
+					{'next': {'0': {' ': '0'}},
+					'children':{'0': {}},
+					'functions':{'0':save},
+					'parents': {'0':{}}},
 
-				' ' : 	{'next': {'0':{' ':'0','init':'0'}}, 	'children':{'0':{}}, 	'functions':{'0':cf.parseChar}},
+				' ' :
+					{'next': {'0':{' ':'0','init':'0'}},
+					'children':{'0':{}},
+					'functions':{'0':cf.parseChar},
+					'parents': {'0':{}}},
 
 
-				'init':{'next': {'0': {'char': '0'}}, 'children':{'0': {}}, 'functions':{'0': init}},
+				'init':
+					{'next': {'0': {'char': '0'}},
+					'children':{'0': {}},
+					'functions':{'0': init},
+					'parents': {'0':{}}},
 
-				'last_to_save' : {'next': {'0': {}}, 'children':{'0': {}}, 'functions':{'0': lastToSave}},
+				'last_to_save' :
+					{'next': {'0': {}},
+					'children':{'0': {}},
+					'functions':{'0': lastToSave},
+					'parents': {'0':{}}},
 
 
 
 				// evaluate_expression
-				'a' : {'next': { '0' : {'reset_for_next_round_of_input':'0', 'op':'0', 'op_ignore':'0'}}, 'children': { '0':{}}, 		'functions' : {'0':getA/*  setKindOfNumberToA */}},
+				'a' :
+					{'next': {'0' : {'reset_for_next_round_of_input':'0', 'op':'0', 'op_ignore':'0'}},
+					'children': { '0':{}},
+					'functions' : {'0':getA/*  setKindOfNumberToA */},
+					'parents': {'0':{'evaluate_expression': '0'}}},
 
-				'op' : {'next': {'0':{'error': '0', 'b':'evaluate'}}, 		'children': {'0':{}}, 			'functions' : { '0': cf.parseChar} },
+				'op' :
+					{'next': {'0':{'error': '0', 'b':'evaluate'}},
+					'children': {'0':{}}, 
+					'functions' : { '0': cf.parseChar},
+					'parents': {'0':{}}},
 
-				'b' : {	'next': { 'evaluate':{'reset_for_next_round_of_input':'0', 'a':'0', 'op_ignore':'0'}}, 'children': {'evaluate':{}}, 'functions' : {'evaluate':evaluate}},
-
-
-				'op_ignore' : {'next': {'0':{'error': '0', 'value_ignore':'0'}}, 	'children': {'0':{}}, 'functions' : {'0':cf.parseChar}},
-
-				'value_ignore' : 	{'next': {'0':{'reset_for_next_round_of_input':'0', 'op_ignore':'0', 'value_ignore': 'valid_op'},'valid_op': {'op':'0'}}, 'children': {'0':{}, 'valid_op': {}}, 	'functions' : {'0':cf.parseChar, 'valid_op': validOp}},
-
-
-
-
-				'error' : {'next': {'0':{}}, 'children':{'0':{}}, 'functions':{'0':noMoreInput}},
+				'b' :
+					{'next': { 'evaluate':{'reset_for_next_round_of_input':'0', 'a':'0', 'op_ignore':'0'}},
+					'children': {'evaluate':{}},
+					'functions' : {'evaluate':evaluate},
+					'parents': {'0':{}, 'evaluate':{}}},
 
 
-				'invalid' : {'next': {'0': {}}, 'children':{'0': {}}, 'functions':{'0': inputIsInvalid}}
+				'op_ignore' :
+					{'next': {'0':{'error': '0', 'value_ignore':'0'}},
+					'children': {'0':{}},
+					'functions' : {'0':cf.parseChar},
+					'parents': {'0':{}}},
+
+				'value_ignore' :
+					{'next': {'0':{'reset_for_next_round_of_input':'0', 'op_ignore':'0', 'value_ignore': 'valid_op'},'valid_op': {'op':'0'}},
+					'children': {'0':{}, 'valid_op': {}},
+					'functions' : {'0':cf.parseChar, 'valid_op': validOp},
+					'parents': {'0':{'ignore':'0'}, 'valid_op': {}}},
+
+
+
+
+				'error' :
+					{'next': {'0':{}},
+					'children':{'0':{}},
+					'functions':{'0':noMoreInput},
+					'parents':{'0':{}}},
+
+
+				'invalid' :
+					{'next': {'0': {}},
+					'children':{'0': {}},
+					'functions':{'0': inputIsInvalid},
+					'parents': {'0': {}}}
 
 
 
@@ -458,8 +535,8 @@ var nodeReducer4 = (state = {vars}, action) => {
 
 }
 
-var calculator_reducer = createStore(nodeReducer4)
+//var calculator_reducer = createStore(nodeReducer4)
 // -1 so highest level of graph isn't printed with an indent
-hcssm.visitRedux(['split', '0'], calculator_reducer, vars, -1)
+hcssm.visitRedux(['split', '0']/*, calculator_reducer*/, vars, -1)
 
 console.log('done w machine')

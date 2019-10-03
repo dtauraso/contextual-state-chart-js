@@ -1,6 +1,8 @@
-import { createStore } from 'redux'
-import * as hcssm from './hierarchial_context_sensitive_state_machine.js'
-import * as cf from './common_functions.js'
+//import { createStore } from 'redux'
+//import * as hcssm from './hierarchial_context_sensitive_state_machine.js'
+//import * as cf from './common_functions.js'
+var hcssm = require('./hierarchial_context_sensitive_state_machine')
+var cf = require('./common_functions')
 
 
 // each state has a case.  I can visit the same state at a different point in time and use the same function or use a different function(it can be similar or completely different).  The point is that the main idea of the processing(the current state) can be used for many different things(they have to be small things).  If the different things are too big, the (state, case) must be the name of another graph
@@ -40,28 +42,7 @@ var doesNothing = (store, var_store) => {
 
 
 
-let parsing_checks2 = {
-	'-' : [isMinus],
-	'#' : [cf.isDigit],
-	'x' : [isX],
-	'exponent' : [isExponent],
-	'number' : [doesNothing],
-	'*' : [isStar]
-}
 
-let parents2 = {
-
-
-	'number' : [{'root': '0'} ],
-	'-' : [{'number': '0'}],
-	'#' : [{}],
-	'x' : [{}],
-	'exponent' : [{}],
-	'*' : [{}],
-	'end_of#' : [{}],
-	'end' : [{}]
-
-}
 
 
 var end = (store, var_store) => {
@@ -71,19 +52,66 @@ var end = (store, var_store) => {
 	//console.log(i, input.length)
 	return i >= input.length
 }
+let parsing_checks2 = {
+	'-' : [isMinus],
+	'#' : [cf.isDigit],
+	'x' : [isX],
+	'exponent' : [isExponent],
+	'number' : [doesNothing],
+	'*' : [isStar]
+}
+
+
 // this control graph uses string for states and number for case
 let node_graph2_ = {
 
-	'number' : 	{'next': [{'x':'0'}], 'children':[{'-': '0'}], 'functions':[doesNothing]},
-	'x' : 		{'next': [{'exponent':'0', '*':'0'}], 'children':[{}], 'functions':[cf.parseChar]},
-	'exponent' :  {'next': [{'number':'0'}], 'children':[{}], 'functions':[cf.parseChar]},
-	'*' : 			{'next': [{'end':'0'}], 'children':[{}], 'functions':[cf.parseChar]},
+	'number' :
+		{'next': {'0' : {'x':'0'}},
+		'children':{'0' : {'-': '0'}},
+		'functions':{'0' : doesNothing},
+		'parents': {'0' : {'root': '0'} }},
+	'x' :
+		{'next': {'0' : {'exponent':'0', '*':'0'}},
+		'children':{'0' : {}},
+		'functions':{'0' : cf.parseChar},
+		'parents' : {'0': {}}
+	},
+	'exponent' :
+		{'next': {'0' : {'number':'0'}},
+		'children':{'0' : {}},
+		'functions':{'0' : cf.parseChar},
+		'parents' : {'0': {}}
+	},
+	'*' :
+		{'next': {'0' : {'end':'0'}},
+		'children':{'0' : {}},
+		'functions':{'0' : cf.parseChar},
+		'parents' : {'0': {}}
+	},
 
 	// parses the number
-	'-' : 	{'next': [{'#':'0'}], 'children':[{}], 'functions':[cf.parseChar]},
-	'#'  : 		{'next': [{'#':'0', 'end_of#':'0'}], 'children':[{}], 'functions':[cf.parseChar]},
-	'end_of#': 		{'next':[{}], 'children': [{}], 'functions' : [cf.isNotDigit]},
-	'end' : {'next': [{}], 'children':[{}], 'functions':[end]}
+	'-' :
+		{'next': {'0' : {'#':'0'}},
+		'children':{'0' : {}},
+		'functions':{'0' : cf.parseChar},
+		'parents' : {'0': {'number': '0'}}
+	},
+	'#'  :
+		{'next': {'0' : {'#':'0', 'end_of#':'0'}},
+		'children':{'0' : {}},
+		'functions':{'0' : cf.parseChar},
+		'parents' : {'0': {}}
+	},
+	'end_of#':
+		{'next':{'0' : {}},
+		'children': {'0' : {}},
+		'functions' : {'0' : cf.isNotDigit},
+		'parents' : {'0': {}}},
+	'end' :
+		{'next': {'0' : {}},
+		'children':{'0' : {}},
+		'functions':{'0' : end},
+		'parents' : {'0': {}}}
 
 }
 
@@ -97,7 +125,6 @@ var state_machine = {
 
 	'count' : 0,
 
-	'parsing_checks' : parsing_checks2,
     action_succeded: false,
 
 
@@ -114,6 +141,6 @@ var nodeReducer3 = (state = {state_machine}, action) => {
 
 
 
-var recursive_reducer = createStore(nodeReducer3)
-hcssm.visitRedux(['number', '0'], recursive_reducer, state_machine, 0)
+//var recursive_reducer = createStore(nodeReducer3)
+hcssm.visitRedux(['number', '0']/*, recursive_reducer*/, state_machine, 0)
 console.log('done w machine')

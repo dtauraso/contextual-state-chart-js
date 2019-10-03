@@ -1,3 +1,5 @@
+
+/*
 exports.universalReducer = (state, action, var_store) => {
 	Object.assign(state, {action_succeded: false});
 
@@ -37,7 +39,7 @@ exports.universalReducer = (state, action, var_store) => {
 		//console.log('action', state.action_succeded)
 
 	}
-}
+}*/
 
 exports.doesNextStatesExist = (next_states) => {
 
@@ -52,10 +54,10 @@ exports.isParent = (children) => {
 }
 
 exports.hasParent = (graph, state, case_) => {
-
-	return Object.keys(graph['parents'][state][case_]).length > 0
+	//console.log(Object.keys(graph['node_graph2'][state]['parents'][case_]))
+	return Object.keys(graph['node_graph2'][state]['parents'][case_]).length > 0//Object.keys(graph['parents'][state][case_]).length > 0
 }
-export function ChildParent (child, parent) {
+function ChildParent (child, parent) {
 
 	this.child = child
 	this.parent = parent
@@ -72,7 +74,7 @@ exports.getIndents = (count) => {
 	return indent
 }
 
-exports.printStack = (bottom) => {
+/*exports.*/ var printStack = (bottom) => {
 
 	var tracker = bottom[0]
 	var stack = []
@@ -110,22 +112,31 @@ exports.getNextStates = (tracker, continuing_next_states, indents, graph) => {
 
 	var state1 = tracker.child[0]
 	var case1 = tracker.child[1]
-
+	//console.log("tracker")
+	//console.log(tracker)
 	// todo: need to delete the bottom of the list as we ascend it, not ignore it
+	// continues untill there are no next states to obtain
 	while (tracker !== null && continuing_next_states.length === 0)
 	{
 		indents -= 1
 		tracker = tracker.parent
 		state1 = tracker.child[0]
 		case1 = tracker.child[1]
+		//console.log(tracker)
+		//console.log(state1, case1)			
+
 		// need to exit the main loop
 		if (state1 === 'root')
 		{
+			//console.log("here")
+
 			continuing_next_states = []
 			return [tracker, continuing_next_states, indents]
 		}
 
-		continuing_next_states = Object.entries(graph['node_graph2'][state1]['next'][case1])
+		continuing_next_states = Object.entries(graph['node_graph2'][state1]['next'][case1])//Object.entries(graph['node_graph2'][state1]['next'][case1])
+		//console.log(continuing_next_states)
+		//console.log(tracker)
 
 	}
 	return [tracker, continuing_next_states, indents]
@@ -200,7 +211,7 @@ exports.printVarStore = (graph) => {
 	return '|' + graph['input'][m] + '|'
 
 }
-exports.visitRedux = (node, store, graph, indents) => {
+exports.visitRedux = (node/*, store*/, graph, indents) => {
 	// does depth first tranversal for each subgraph(each subgraph is a state name that has children)
 	// does breath first traversal for within each subgraph
 	let x = node[0]
@@ -215,8 +226,9 @@ exports.visitRedux = (node, store, graph, indents) => {
 	//console.log(getIndents(indents), 'start state', node)
     while(next_states.length != 0)
     {
-    	//console.log(ii)
 
+    	//console.log(ii)
+		//printStack(bottom)
         if(ii == 200)
         {
             fail
@@ -234,14 +246,24 @@ exports.visitRedux = (node, store, graph, indents) => {
         {
 			state = next_states[j][0]
 			case_ = next_states[j][1]
-            action = {type: state, case_: case_}
-            store.dispatch(action)
+			/*
+			if(state === 'root' && case_ === '0')
+			{
 
+			}
+			*/
+            //action = {type: state, case_: case_}
+            //store.dispatch(action)
+            //console.log('state, case')
+            //console.log(state, case_)
+            // should be children, then check if they have a parent?
+            // will only work for nodes that have children
 			let maybe_parent = graph['node_graph2'][ state ]['children'][ case_ ]
 			let recursive_option = graph['recursive_option']
+
 			// seems to work on functions of the form f(x)
 			// https://stackoverflow.com/questions/11107823/what-happens-if-i-dont-pass-a-parameter-in-a-javascript-function
-			let did_function_pass = store.getState().action_succeded
+			let did_function_pass = graph['node_graph2'][state]['functions'][case_](state, graph, [state, case_])
 			if (did_function_pass)
 			{
 				if (state == 'error')
@@ -256,12 +278,13 @@ exports.visitRedux = (node, store, graph, indents) => {
 					// only checks the state and not the case
 					let bottom_state = bottom[0].child[0]
 					let bottom_case = bottom[0].child[1]
-
-					let parent_cases = Object.entries(graph['parents'][state][case_])
+					// change
+					let parent_cases = Object.entries(graph['node_graph2'][state]['parents'][case_])//Object.entries(graph['parents'][state][case_])
+					//console.log(parent_cases)
 					parent_cases = exports.makeNextStates(parent_cases)
 					if (exports.isBottomAtTheParentOfCurrentState(parent_cases, bottom_state, bottom_case))
 					{
-						let new_parent = new exports.ChildParent([state, case_], bottom[0])
+						let new_parent = new ChildParent([state, case_], bottom[0])
 						// link passing state to its parent on bottom of stack, extending the stack by 1, vertically
 						bottom[0] = new_parent
 						indents += 1
@@ -337,6 +360,9 @@ exports.visitRedux = (node, store, graph, indents) => {
 			{
 				console.log('done runing machine')
 			}*/
+			//console.log(next_states)
+			//printStack(bottom)
+
 		}
 
 
