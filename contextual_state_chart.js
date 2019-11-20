@@ -211,7 +211,7 @@ exports.printVarStore = (graph) => {
 	return '|' + graph['input'][m] + '|'
 
 }
-exports.visitRedux = (node, end_state/*, store*/, graph, indents) => {
+exports.visitRedux = (node, end_state/*, store*/, graph, indents, optional_parameter) => {
 	// does depth first tranversal for each subgraph(each subgraph is a state name that has children)
 	// does breath first traversal for within each subgraph
 	let x = node[0]
@@ -341,17 +341,17 @@ exports.visitRedux = (node, end_state/*, store*/, graph, indents) => {
 
 		}
 		// console.log(next_states.length)
-	
+	// we want to leave the machine here
+		if(state === end_state[0] &&
+			case_ === end_state[1])
+		{
+			// console.log("done")
+			break
+		}
 		//printStack(bottom)
 		if (next_states.length === 0)
 		{
-			// we want to leave the machine here
-			if(state === end_state[0] &&
-				case_ === end_state[1])
-			{
-				// console.log("done")
-				break
-			}
+			
 			// console.log("here")
 			// have linked list representing the stack
 			// first item is in bottom[0]
