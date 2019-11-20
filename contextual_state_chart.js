@@ -211,7 +211,7 @@ exports.printVarStore = (graph) => {
 	return '|' + graph['input'][m] + '|'
 
 }
-exports.visitRedux = (node/*, store*/, graph, indents) => {
+exports.visitRedux = (node, end_state/*, store*/, graph, indents) => {
 	// does depth first tranversal for each subgraph(each subgraph is a state name that has children)
 	// does breath first traversal for within each subgraph
 	let x = node[0]
@@ -223,10 +223,14 @@ exports.visitRedux = (node/*, store*/, graph, indents) => {
 	let parent = new ChildParent(['root', '0'], null)
 	bottom.push(parent)
 	var ii = 0
+	// to target a start point and end point
+	// start from the state state
+	// assume the end state is actually and end state
 	//console.log(getIndents(indents), 'start state', node)
     while(next_states.length != 0)
     {
 
+		
     	//console.log(ii)
 		//printStack(bottom)
         if(ii == 200)
@@ -246,6 +250,7 @@ exports.visitRedux = (node/*, store*/, graph, indents) => {
         {
 			state = next_states[j][0]
 			case_ = next_states[j][1]
+
 			/*
 			if(state === 'root' && case_ === '0')
 			{
@@ -334,11 +339,20 @@ exports.visitRedux = (node/*, store*/, graph, indents) => {
 
 
 
-        }
-
+		}
+		// console.log(next_states.length)
+	
 		//printStack(bottom)
 		if (next_states.length === 0)
 		{
+			// we want to leave the machine here
+			if(state === end_state[0] &&
+				case_ === end_state[1])
+			{
+				// console.log("done")
+				break
+			}
+			// console.log("here")
 			// have linked list representing the stack
 			// first item is in bottom[0]
 
@@ -364,7 +378,6 @@ exports.visitRedux = (node/*, store*/, graph, indents) => {
 			//printStack(bottom)
 
 		}
-
 
         // if all fail then all will be rerun unless this condition is here
         if(!state_changed && next_states.length > 0)

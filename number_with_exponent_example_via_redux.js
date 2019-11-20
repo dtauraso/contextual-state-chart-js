@@ -1,7 +1,7 @@
 //import { createStore } from 'redux'
-//import * as hcssm from './hierarchial_context_sensitive_state_machine.js'
+//import * as hcssm from './contextual_state_chart.js'
 //import * as cf from './common_functions.js'
-var hcssm = require('./hierarchial_context_sensitive_state_machine')
+var hcssm = require('./contextual_state_chart')
 var cf = require('./common_functions')
 
 
