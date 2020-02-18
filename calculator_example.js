@@ -1,7 +1,7 @@
 //var createStore = require('redux')
 //import createStore from 'redux'
-var hcssm = require('./hierarchial_context_sensitive_state_machine')
-//import * as hcssm from './hierarchial_context_sensitive_state_machine.js'
+var hcssm = require('./contextual_state_chart')
+//import * as hcssm from './contextual_state_chart.js'
 var cf = require('./common_functions')
 //import * as cf from './common_functions.js'
 
@@ -343,39 +343,13 @@ var validate = (store, var_store, node) => {
 
 }
 
-//var parents = {
 
-	// only the parent
-//	' ' : {'0':{}},
-//	'a' : {'0':{'evaluate_expression': '0'}},
-//	'op' : {'0':{}},
-//	'b' : {'0':{}, 'evaluate':{}},
-//	'op_ignore' : {'0':{}},
-//	'value_ignore' : {'0':{'ignore':'0'}, 'valid_op': {}},
-//	'error' : {'0':{}},
-//	'invalid' : {'0': {}},
-//	'validate' : {'0':{}},
-//	'evaluate_expression' : {'0':{}},
-
-//	'reset_for_next_round_of_input' : {'0':{}},
-//	'end_of_evaluating' : {'0':{}},
-//	'input_has_1_value':{'0':{}},
-
-//	'split' : {'0':{'root':'0'}},
-
-//	'char': {'0':{'split':'0'}},
-//	'last_to_save' : {'0':{}},
-
-//	'save' : {'0':{}},
-//	'init' : {'0':{}}
-//}
 var vars = {
 	'input' : /* passes '1 + 2 + 3 + 4',*//*'1 + 2 + 3 + 4 - 5 + 6 + 7 - 8 - 9 + 10 + 11 + 12',*//*'1+',*//*'1 +2',*/'1 + 2 + 3 + 4 - 5 + 6 * 7 - 8 - 9 + 10 * 11 + 12', // '1 '
 	// 10 - 18 - 8 - 42
 	'expression' : [],
 	'collected_string' : '',
 	'i' : 0,
-	//'parents' : parents,
 
 	'operation_vars' : {
 

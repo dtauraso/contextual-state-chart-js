@@ -223,6 +223,9 @@ exports.visitRedux = (node/*, store*/, graph, indents) => {
 	let parent = new ChildParent(['root', '0'], null)
 	bottom.push(parent)
 	var ii = 0
+	// to target a start point and end point
+	// start from the state state
+	// assume the end state is actually and end state
 	//console.log(getIndents(indents), 'start state', node)
     while(next_states.length != 0)
     {
