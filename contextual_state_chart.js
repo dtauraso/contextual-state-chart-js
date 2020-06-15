@@ -48,7 +48,9 @@ exports.doesNextStatesExist = (next_states) => {
 
 exports.isParent = (children) => {
 
-
+	// a parent isn't a child
+	console.log(children)
+	console.log(Object.keys(children).length, children.constructor === Object)
 	return   !((Object.keys(children).length === 0 && children.constructor === Object))
 
 }
@@ -146,7 +148,7 @@ exports.makeNextStates = (next_states) => {
 	var new_nex_states = []
 
 
-
+	console.log('here', {next_states})
 	for(var n in next_states)
 	{
 		if (typeof(next_states[n][1]) === 'object')
@@ -262,50 +264,100 @@ exports.visitRedux = (node, end_state/*, store*/, graph, indents, optional_param
             //console.log('state, case')
             //console.log(state, case_)
             // should be children, then check if they have a parent?
-            // will only work for nodes that have children
-			let maybe_parent = graph['node_graph2'][ state ]['children'][ case_ ]
-			let recursive_option = graph['recursive_option']
+			// will only work for nodes that have children
+			console.log( state, case_ )
+			let children = graph['node_graph2'][ state ]['children'][ case_ ]
+			// let recursive_option = graph['recursive_option']
 
 			// seems to work on functions of the form f(x)
 			// https://stackoverflow.com/questions/11107823/what-happens-if-i-dont-pass-a-parameter-in-a-javascript-function
 			let did_function_pass = graph['node_graph2'][state]['functions'][case_](state, graph, [state, case_])
+
+			/*
+			if !state passed
+				exit
+			
+			if the top of stack has an empty item
+				state is a child and put it in the item
+
+			if state is parent
+				push empty item to stack
+				(the next state is a child then so it's added to the empty item next round)
+			*/
 			if (did_function_pass)
 			{
 				if (state == 'error')
 	            {
 	            	console.log('you have invalid input')
 	            	process.exit()
-	            }
-				// needs to always check before the isParent
-				if (exports.hasParent(graph, state, case_))
+				}
+				if(bottom[0].length === 0)
 				{
-					// push the state to the bottom if bottom happens to be one of state's parents
-					// only checks the state and not the case
+					bottom[0].child[0] = state
+					bottom[0].child[1] = case_
+				}
+				// can we assume the state is a parent if it has children?
+				// that idea worked for redux
+				// needs to always check before the isParent
+				// is this node a child of the last state run?
+				// if (exports.hasParent(graph, state, case_))
+				// {
+				// 	// push the state to the bottom if bottom happens to be one of state's parents
+				// 	// only checks the state and not the case
+				// 	let bottom_state = bottom[0].child[0]
+				// 	let bottom_case = bottom[0].child[1]
+				// 	// change
+				// 	let parent_cases = Object.entries(graph['node_graph2'][state]['parents'][case_])//Object.entries(graph['parents'][state][case_])
+				// 	//console.log(parent_cases)
+				// 	parent_cases = exports.makeNextStates(parent_cases)
+				// 	if (exports.isBottomAtTheParentOfCurrentState(parent_cases, bottom_state, bottom_case))
+				// 	{
+				// 		let new_parent = new ChildParent([state, case_], bottom[0])
+				// 		// link passing state to its parent on bottom of stack, extending the stack by 1, vertically
+				// 		bottom[0] = new_parent
+				// 		indents += 1
+				// 	}
+
+
+				// }
+				// console.log({children})
+
+				// children = graph['node_graph2'][ state ]['children'][ case_ ]
+				// for when passing the current state(it is in the current next states) has a child(called next states)
+				if (Object.keys(children).length > 0)
+				{
+					// console.log({children})
+					// add passing state horizontally
+					bottom[0].child = [state, case_]
+
 					let bottom_state = bottom[0].child[0]
 					let bottom_case = bottom[0].child[1]
 					// change
 					let parent_cases = Object.entries(graph['node_graph2'][state]['parents'][case_])//Object.entries(graph['parents'][state][case_])
-					//console.log(parent_cases)
+					// console.log(parent_cases)
+					console.log('parents')
 					parent_cases = exports.makeNextStates(parent_cases)
 					if (exports.isBottomAtTheParentOfCurrentState(parent_cases, bottom_state, bottom_case))
 					{
-						let new_parent = new ChildParent([state, case_], bottom[0])
+						let new_parent = new ChildParent([/*state, case_*/], bottom[0])
 						// link passing state to its parent on bottom of stack, extending the stack by 1, vertically
 						bottom[0] = new_parent
 						indents += 1
 					}
 
 
-				}
 
-				// for when passing the current state(it is in the current next states) has a child(called next states)
-				if (exports.isParent(maybe_parent))
-				{
-					// add passing state horizontally
-					bottom[0].child = [state, case_]
+
+
+
+
+
+
+
 
 					// getting the children
-					let children = Object.entries(graph['node_graph2'][state]['children'][case_])
+					// let children = Object.entries(graph['node_graph2'][state]['children'][case_])
+					console.log('children')
 					children = exports.makeNextStates(children)
 					next_states = []
 					for(var i in children)
@@ -337,7 +389,8 @@ exports.visitRedux = (node, end_state/*, store*/, graph, indents, optional_param
 				break
 			}
 
-
+			console.log(bottom)
+			console.log()
 
 		}
 		// console.log(next_states.length)

@@ -1,3 +1,4 @@
+
 //var createStore = require('redux')
 //import createStore from 'redux'
 var hcssm = require('./contextual_state_chart')
@@ -176,14 +177,6 @@ var minus = (a, b) => {
 
 
 
-var parsing_checks = {
-
-	'op' : {'0':isOp},
-	'value_ignore' : {'0':cf.isDigit},
-	'op_ignore' : {'0': ignoreOp},
-	' ' : {'0':isWhiteSpace},
-
-}
 
 
 
@@ -343,6 +336,14 @@ var validate = (store, var_store, node) => {
 
 }
 
+var parsing_checks = {
+
+	'op' : {'0':isOp},
+	'value_ignore' : {'0':cf.isDigit},
+	'op_ignore' : {'0': ignoreOp},
+	' ' : {'0':isWhiteSpace},
+
+}
 
 var vars = {
 	'input' : /* passes '1 + 2 + 3 + 4',*//*'1 + 2 + 3 + 4 - 5 + 6 + 7 - 8 - 9 + 10 + 11 + 12',*//*'1+',*//*'1 +2',*/'1 + 2 + 3 + 4 - 5 + 6 * 7 - 8 - 9 + 10 * 11 + 12', // '1 '
@@ -412,31 +413,65 @@ var vars = {
 
 
 				// split
+				/*
+				'char 0'
+					parents: ['split 0']
+					name: 'char 0'
+					function: collectChar
+					next: ['last_to_save 0', 'char 0', 'save 0']
+				*/
 				'char':
 					{'next': {'0': {'last_to_save': '0', 'char': '0', 'save': '0'}},
 					'children':{'0': {}},
 					'functions':{'0':collectChar},
 					'parents': {'0':{'split':'0'}}}, // actually needs parents because it's the first state checked from split
 
+				/*
+				'save 0'
+					parents: ['split 0']
+					name: 'save 0'
+					function: save
+					next: ['  0']
+				*/
 				'save':
 					{'next': {'0': {' ': '0'}},
 					'children':{'0': {}},
 					'functions':{'0':save},
 					'parents': {'0':{}}},
-
+				/*
+				'  0'
+					parents: ['split 0']
+					name: '  0'
+					function: cf.parseChar
+					next: ['  0', 'init 0']
+				*/
 				' ' :
 					{'next': {'0':{' ':'0','init':'0'}},
 					'children':{'0':{}},
 					'functions':{'0':cf.parseChar},
 					'parents': {'0':{}}},
 
-
+				/*
+				'init 0'
+					parents: ['split 0']
+					name: 'init 0'
+					function: init
+					next: ['char 0']
+				*/
 				'init':
 					{'next': {'0': {'char': '0'}},
 					'children':{'0': {}},
 					'functions':{'0': init},
 					'parents': {'0':{}}},
 
+				/*
+				'last_to_save 0'
+
+					parents: ['split 0']
+					name: 'last_to_save 0'
+					function: lastToSave
+
+				*/
 				'last_to_save' :
 					{'next': {'0': {}},
 					'children':{'0': {}},
@@ -446,38 +481,94 @@ var vars = {
 
 
 				// evaluate_expression
+
+				/*
+				'a 0'
+
+					parents: ['input_has_1_value 0'](wrong parent)
+					name: 'a 0'
+					function: getA
+					next: ['reset_for_next_round_of_input 0', 'op 0', 'op_ignore 0']
+				*/
 				'a' :
 					{'next': {'0' : {'reset_for_next_round_of_input':'0', 'op':'0', 'op_ignore':'0'}},
 					'children': { '0':{}},
 					'functions' : {'0':getA/*  setKindOfNumberToA */},
 					'parents': {'0':{'evaluate_expression': '0'}}},
 
+				/*
+				'op 0'
+
+					parents: ['input_has_1_value 0']
+					name: 'op 0'
+					function: cf.parseChar
+					next: ['error 0', 'b evaluate']
+				*/
 				'op' :
 					{'next': {'0':{'error': '0', 'b':'evaluate'}},
 					'children': {'0':{}}, 
 					'functions' : { '0': cf.parseChar},
 					'parents': {'0':{}}},
 
+				/*
+				'b evaluate'
+
+					parents: ['input_has_1_value 0']
+					name: 'b evaluate'
+					function: evaluate
+					next: ['reset_for_next_round_of_input 0', 'a 0', 'op_ignore 0']
+				*/
 				'b' :
 					{'next': { 'evaluate':{'reset_for_next_round_of_input':'0', 'a':'0', 'op_ignore':'0'}},
 					'children': {'evaluate':{}},
 					'functions' : {'evaluate':evaluate},
 					'parents': {'0':{}, 'evaluate':{}}},
 
-
+				/*
+				'ob_ignore 0'
+					parents: ['input_has_1_value 0']
+					name: 'ob_ignore 0'
+					function: cf.parseChar
+					next: ['error 0', 'value_ignore 0']
+				*/
 				'op_ignore' :
 					{'next': {'0':{'error': '0', 'value_ignore':'0'}},
 					'children': {'0':{}},
 					'functions' : {'0':cf.parseChar},
 					'parents': {'0':{}}},
 
+				/*
+
+				parents
+				name
+				function
+				next
+				children
+
+				'value_ignore 0'
+					parents: ['ignore 0'](doesn't exist) ['input_has_1_value 0']
+					name: 'value_ignore 0'
+					function: cf.parseChar
+					next: ['reset_for_next_round_of_input 0', 'op_ignore 0', 'value_ignore valid_op']
+				
+				'value_ignore valid_op'
+					parents: ['ignore 0'](doesn't exist) ['input_has_1_value 0']
+					name: 'value_ignore valid_op'
+					function: validOp
+					nexts: ['op 0']
+				*/
 				'value_ignore' :
 					{'next': {'0':{'reset_for_next_round_of_input':'0', 'op_ignore':'0', 'value_ignore': 'valid_op'},'valid_op': {'op':'0'}},
 					'children': {'0':{}, 'valid_op': {}},
 					'functions' : {'0':cf.parseChar, 'valid_op': validOp},
 					'parents': {'0':{'ignore':'0'}, 'valid_op': {}}},
 
-
+				/*
+				'error 0'
+					parents: ['input_has_1_value 0']
+					name: 'error 0'
+					function: noMoreInput
+				*/
 
 
 				'error' :
@@ -486,7 +577,12 @@ var vars = {
 					'functions':{'0':noMoreInput},
 					'parents':{'0':{}}},
 
-
+				/*
+				invalid 0
+					parents: ['input_has_1_value 0']
+					name: 'invalid 0'
+					function: inputIsInvalid
+				*/
 				'invalid' :
 					{'next': {'0': {}},
 					'children':{'0': {}},
