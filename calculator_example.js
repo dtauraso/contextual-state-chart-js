@@ -338,10 +338,10 @@ var validate = (store, var_store, node) => {
 
 var parsing_checks = {
 
-	'op' : {'0':isOp},
-	'value_ignore' : {'0':cf.isDigit},
-	'op_ignore' : {'0': ignoreOp},
-	' ' : {'0':isWhiteSpace},
+	'op 0': isOp,
+	'value_ignore 0': cf.isDigit,
+	'op_ignore 0': ignoreOp,
+	'  0': isWhiteSpace,
 
 }
 
@@ -368,174 +368,244 @@ var vars = {
 			// any next states having {} means it is a finishing state(but having no edges as true signals an error )
 			// {'next': [], 'children':[], 'functions':[]}
 			// {'next': {'0': {}}, 'children':{'0': {}}, 'functions':{'0'}}
-
-			'split' :
-				{'next': {'0': {'validate':'0', 'invalid':'0'}},
-				'children': {'0': {'char':'0'}},
-				'functions':{'0':returnTrue},
-				'parents' :{'0':{'root':'0'}}},
-
-
-
-			'validate' :
-				{'next': {'0': {'evaluate_expression': '0'}},
-				'children':{'0': {}}, 
-				'functions':{'0': validate},
-				'parents' :{'0':{}}},
-
-
-			'evaluate_expression' :
-				{'next': {'0': {'input_has_1_value':'0','evaluate_expression':'0'}},
-				'children':{'0': {'a':'0'}},
-				'functions':{'0': returnTrue},
-				'parents' :{'0':{}}},
+			
+			'split 0': {
+				'parents': ['root 0'],
+				'name': 'split 0',
+				'function': returnTrue,
+				'next': ['validate 0', 'invalid 0'],
+				'children': ['char 0']
+			},
+				
+			
+			// 'split' :
+			// 	{'next': {'0': {'validate':'0', 'invalid':'0'}},
+			// 	'children': {'0': {'char':'0'}},
+			// 	'functions':{'0':returnTrue},
+			// 	'parents' :{'0':{'root':'0'}}},
 
 
+			
+			'validate 0': {
+				'parents': [],
+				'name': 'validate 0',
+				'function': validate,
+				'next': ['evaluate_expression 0']
+			},
+				
+			
+			// 'validate' :
+			// 	{'next': {'0': {'evaluate_expression': '0'}},
+			// 	'children':{'0': {}}, 
+			// 	'functions':{'0': validate},
+			// 	'parents' :{'0':{}}},
 
-			'reset_for_next_round_of_input':
-				{'next': {'0': {'end_of_evaluating': '0'}},
-				'children':{'0':{}},
-				'functions':{'0':resetForNextRound},
-				'parents': {'0':{}}},
+			
+			'evaluate_expression 0': {
+				'parents': [],
+				'name': 'evaluate_expression 0',
+				'function': returnTrue,
+				'next': ['input_has_1_value 0','evaluate_expression 0'],
+				'children': ['a 0']
+			},
+				
+			
+			// 'evaluate_expression' :
+			// 	{'next': {'0': {'input_has_1_value':'0','evaluate_expression':'0'}},
+			// 	'children':{'0': {'a':'0'}},
+			// 	'functions':{'0': returnTrue},
+			// 	'parents' :{'0':{}}},
 
 
-			'end_of_evaluating' :
-				{'next': {'0': {}},
-				'children':{'0': {}},
-				'functions':{'0':returnTrue},
-				'parents':	{'0':{}}},
+			
+			'reset_for_next_round_of_input 0': {
+				'parents': [],
+				'name': 'reset_for_next_round_of_input 0',
+				'function': resetForNextRound,
+				'next': ['end_of_evaluating 0']
+			},
+				
+			
+			// 'reset_for_next_round_of_input':
+			// 	{'next': {'0': {'end_of_evaluating': '0'}},
+			// 	'children':{'0':{}},
+			// 	'functions':{'0':resetForNextRound},
+			// 	'parents': {'0':{}}},
 
-			'input_has_1_value' :
-				{'next': {'0': {}},
-				'children':{'0': {}},
-				'functions':{'0':showAndExit},
-				'parents': {'0':{}}},
+			
+			'end_of_evaluating 0': {
+				'parents': [],
+				'name': 'end_of_evaluating 0',
+				'function': returnTrue
+			},
+
+				
+
+			
+			// 'end_of_evaluating' :
+			// 	{'next': {'0': {}},
+			// 	'children':{'0': {}},
+			// 	'functions':{'0':returnTrue},
+			// 	'parents':	{'0':{}}},
+
+			
+			'input_has_1_value 0': {
+				'parents': [],
+				'name': 'input_has_1_value 0',
+				'function': showAndExit
+			},
+				
+
+			
+			// 'input_has_1_value' :
+			// 	{'next': {'0': {}},
+			// 	'children':{'0': {}},
+			// 	'functions':{'0':showAndExit},
+			// 	'parents': {'0':{}}},
 
 
 				// split
-				/*
-				'char 0'
-					parents: ['split 0']
-					name: 'char 0'
-					function: collectChar
-					next: ['last_to_save 0', 'char 0', 'save 0']
-				*/
-				'char':
-					{'next': {'0': {'last_to_save': '0', 'char': '0', 'save': '0'}},
-					'children':{'0': {}},
-					'functions':{'0':collectChar},
-					'parents': {'0':{'split':'0'}}}, // actually needs parents because it's the first state checked from split
+				
+				'char 0': {
+					'parents': ['split 0'],
+					'name': 'char 0',
+					'function': collectChar,
+					'next': ['last_to_save 0', 'char 0', 'save 0']
+				},
+					
+				
+				// 'char':
+				// 	{'next': {'0': {'last_to_save': '0', 'char': '0', 'save': '0'}},
+				// 	'children':{'0': {}},
+				// 	'functions':{'0':collectChar},
+				// 	'parents': {'0':{'split':'0'}}}, // actually needs parents because it's the first state checked from split
 
-				/*
-				'save 0'
-					parents: ['split 0']
-					name: 'save 0'
-					function: save
-					next: ['  0']
-				*/
-				'save':
-					{'next': {'0': {' ': '0'}},
-					'children':{'0': {}},
-					'functions':{'0':save},
-					'parents': {'0':{}}},
-				/*
-				'  0'
-					parents: ['split 0']
-					name: '  0'
-					function: cf.parseChar
-					next: ['  0', 'init 0']
-				*/
-				' ' :
-					{'next': {'0':{' ':'0','init':'0'}},
-					'children':{'0':{}},
-					'functions':{'0':cf.parseChar},
-					'parents': {'0':{}}},
+				
+				'save 0': {
+					'parents': ['split 0'],
+					'name': 'save 0',
+					'function': save,
+					'next': ['  0']
+				},
+					
+				
+				// 'save':
+				// 	{'next': {'0': {' ': '0'}},
+				// 	'children':{'0': {}},
+				// 	'functions':{'0':save},
+				// 	'parents': {'0':{}}},
+				
+				'  0': {
+					'parents': ['split 0'],
+					'name': '  0',
+					'function': cf.parseChar,
+					'next': ['  0', 'init 0']
+				},
+					
+				
+				// ' ' :
+				// 	{'next': {'0':{' ':'0','init':'0'}},
+				// 	'children':{'0':{}},
+				// 	'functions':{'0':cf.parseChar},
+				// 	'parents': {'0':{}}},
 
-				/*
-				'init 0'
-					parents: ['split 0']
-					name: 'init 0'
-					function: init
-					next: ['char 0']
-				*/
-				'init':
-					{'next': {'0': {'char': '0'}},
-					'children':{'0': {}},
-					'functions':{'0': init},
-					'parents': {'0':{}}},
+				
+				'init 0': {
+					'parents': ['split 0'],
+					'name': 'init 0',
+					'function': init,
+					'next': ['char 0']
+				},
+					
+				
+				// 'init':
+				// 	{'next': {'0': {'char': '0'}},
+				// 	'children':{'0': {}},
+				// 	'functions':{'0': init},
+				// 	'parents': {'0':{}}},
 
-				/*
-				'last_to_save 0'
+				
+				'last_to_save 0': {
+					'parents': ['split 0'],
+					'name': 'last_to_save 0',
+					'function': lastToSave
+				},
 
-					parents: ['split 0']
-					name: 'last_to_save 0'
-					function: lastToSave
+					
 
-				*/
-				'last_to_save' :
-					{'next': {'0': {}},
-					'children':{'0': {}},
-					'functions':{'0': lastToSave},
-					'parents': {'0':{}}},
+				
+				// 'last_to_save' :
+				// 	{'next': {'0': {}},
+				// 	'children':{'0': {}},
+				// 	'functions':{'0': lastToSave},
+				// 	'parents': {'0':{}}},
 
 
 
 				// evaluate_expression
 
-				/*
-				'a 0'
+				
+				'a 0': {
+					'parents': ['evaluate_expression 0'],
+					'name': 'a 0',
+					'function': getA,
+					'next': ['reset_for_next_round_of_input 0', 'op 0', 'op_ignore 0']
+				},
 
-					parents: ['input_has_1_value 0'](wrong parent)
-					name: 'a 0'
-					function: getA
-					next: ['reset_for_next_round_of_input 0', 'op 0', 'op_ignore 0']
-				*/
-				'a' :
-					{'next': {'0' : {'reset_for_next_round_of_input':'0', 'op':'0', 'op_ignore':'0'}},
-					'children': { '0':{}},
-					'functions' : {'0':getA/*  setKindOfNumberToA */},
-					'parents': {'0':{'evaluate_expression': '0'}}},
+					
+				
+				// 'a' :
+				// 	{'next': {'0' : {'reset_for_next_round_of_input':'0', 'op':'0', 'op_ignore':'0'}},
+				// 	'children': { '0':{}},
+				// 	'functions' : {'0':getA/*  setKindOfNumberToA */},
+				// 	'parents': {'0':{'evaluate_expression': '0'}}},
 
-				/*
-				'op 0'
+				
+				'op 0': {
+					'parents': ['evaluate_expression 0'],
+					'name': 'op 0',
+					'function': cf.parseChar,
+					'next': ['error 0', 'b evaluate']
+				},
 
-					parents: ['input_has_1_value 0']
-					name: 'op 0'
-					function: cf.parseChar
-					next: ['error 0', 'b evaluate']
-				*/
-				'op' :
-					{'next': {'0':{'error': '0', 'b':'evaluate'}},
-					'children': {'0':{}}, 
-					'functions' : { '0': cf.parseChar},
-					'parents': {'0':{}}},
+					
+				
+				// 'op' :
+				// 	{'next': {'0':{'error': '0', 'b':'evaluate'}},
+				// 	'children': {'0':{}}, 
+				// 	'functions' : { '0': cf.parseChar},
+				// 	'parents': {'0':{}}},
 
-				/*
-				'b evaluate'
+				
+				'b evaluate': {
+					'parents': ['evaluate_expression 0'],
+					'name': 'b evaluate',
+					'function': evaluate,
+					'next': ['reset_for_next_round_of_input 0', 'a 0', 'op_ignore 0']
+				},
 
-					parents: ['input_has_1_value 0']
-					name: 'b evaluate'
-					function: evaluate
-					next: ['reset_for_next_round_of_input 0', 'a 0', 'op_ignore 0']
-				*/
-				'b' :
-					{'next': { 'evaluate':{'reset_for_next_round_of_input':'0', 'a':'0', 'op_ignore':'0'}},
-					'children': {'evaluate':{}},
-					'functions' : {'evaluate':evaluate},
-					'parents': {'0':{}, 'evaluate':{}}},
+					
+				
+				// 'b' :
+				// 	{'next': { 'evaluate':{'reset_for_next_round_of_input':'0', 'a':'0', 'op_ignore':'0'}},
+				// 	'children': {'evaluate':{}},
+				// 	'functions' : {'evaluate':evaluate},
+				// 	'parents': {'0':{}, 'evaluate':{}}},
 
-				/*
-				'ob_ignore 0'
-					parents: ['input_has_1_value 0']
-					name: 'ob_ignore 0'
-					function: cf.parseChar
-					next: ['error 0', 'value_ignore 0']
-				*/
-				'op_ignore' :
-					{'next': {'0':{'error': '0', 'value_ignore':'0'}},
-					'children': {'0':{}},
-					'functions' : {'0':cf.parseChar},
-					'parents': {'0':{}}},
+				
+				'op_ignore 0': {
+					'parents': ['evaluate_expression 0'],
+					'name': 'op_ignore 0',
+					'function': cf.parseChar,
+					'next': ['error 0', 'value_ignore 0']
+				},
+
+				
+				// 'op_ignore' :
+				// 	{'next': {'0':{'error': '0', 'value_ignore':'0'}},
+				// 	'children': {'0':{}},
+				// 	'functions' : {'0':cf.parseChar},
+				// 	'parents': {'0':{}}},
 
 				/*
 
@@ -544,50 +614,59 @@ var vars = {
 				function
 				next
 				children
+				*/
 
-				'value_ignore 0'
-					parents: ['ignore 0'](doesn't exist) ['input_has_1_value 0']
-					name: 'value_ignore 0'
-					function: cf.parseChar
-					next: ['reset_for_next_round_of_input 0', 'op_ignore 0', 'value_ignore valid_op']
+				'value_ignore 0': {
+					'parents': ['evaluate_expression 0'],
+					'name': 'value_ignore 0',
+					'function': cf.parseChar,
+					'next': ['reset_for_next_round_of_input 0', 'op_ignore 0', 'value_ignore valid_op']
+				},
+					
 				
-				'value_ignore valid_op'
-					parents: ['ignore 0'](doesn't exist) ['input_has_1_value 0']
-					name: 'value_ignore valid_op'
-					function: validOp
-					nexts: ['op 0']
-				*/
-				'value_ignore' :
-					{'next': {'0':{'reset_for_next_round_of_input':'0', 'op_ignore':'0', 'value_ignore': 'valid_op'},'valid_op': {'op':'0'}},
-					'children': {'0':{}, 'valid_op': {}},
-					'functions' : {'0':cf.parseChar, 'valid_op': validOp},
-					'parents': {'0':{'ignore':'0'}, 'valid_op': {}}},
+				'value_ignore valid_op': {
+					'parents': ['evaluate_expression 0'],
+					'name': 'value_ignore valid_op',
+					'function': validOp,
+					'nexts': ['op 0']
+				},
+					
+				
+				// 'value_ignore' :
+				// 	{'next': {'0':{'reset_for_next_round_of_input':'0', 'op_ignore':'0', 'value_ignore': 'valid_op'},'valid_op': {'op':'0'}},
+				// 	'children': {'0':{}, 'valid_op': {}},
+				// 	'functions' : {'0':cf.parseChar, 'valid_op': validOp},
+				// 	'parents': {'0':{'ignore':'0'}, 'valid_op': {}}},
 
-				/*
-				'error 0'
-					parents: ['input_has_1_value 0']
-					name: 'error 0'
-					function: noMoreInput
-				*/
+				
+				'error 0': {
+					'parents': ['evaluate_expression 0'],
+					'name': 'error 0',
+					'function': noMoreInput
+				},
+					
+				
 
 
-				'error' :
-					{'next': {'0':{}},
-					'children':{'0':{}},
-					'functions':{'0':noMoreInput},
-					'parents':{'0':{}}},
+				// 'error' :
+				// 	{'next': {'0':{}},
+				// 	'children':{'0':{}},
+				// 	'functions':{'0':noMoreInput},
+				// 	'parents':{'0':{}}},
 
-				/*
-				invalid 0
-					parents: ['input_has_1_value 0']
-					name: 'invalid 0'
-					function: inputIsInvalid
-				*/
-				'invalid' :
-					{'next': {'0': {}},
-					'children':{'0': {}},
-					'functions':{'0': inputIsInvalid},
-					'parents': {'0': {}}}
+				
+				'invalid 0': {
+					'parents': ['evaluate_expression 0'],
+					'name': 'invalid 0',
+					'function': inputIsInvalid
+				}
+					
+				
+				// 'invalid' :
+				// 	{'next': {'0': {}},
+				// 	'children':{'0': {}},
+				// 	'functions':{'0': inputIsInvalid},
+				// 	'parents': {'0': {}}}
 
 
 
@@ -610,6 +689,6 @@ var nodeReducer4 = (state = {vars}, action) => {
 // ['split', '0'], ['input_has_1_value', '0'] define a the start point and end point
 // through the state chart
 // ['input_has_1_value', '0']
-hcssm.visitRedux(['split', '0'], ['input_has_1_value', '0']/*, calculator_reducer*/, vars, -1)
+hcssm.visitRedux('split 0', 'input_has_1_value 0'/*, calculator_reducer*/, vars, -1)
 
 console.log('done w machine')

@@ -20,8 +20,7 @@ exports.getChar = (store, var_store) => {
 exports.parseChar = (store, var_store, node) => {
 
 	//console.log('in parseChar', node)
-	let state = node[0]
-	let case_ = node[1]
+	let state_name = node
 	let i = var_store['i']
 	let input = var_store['input']
 	//console.log(i, input.length)
@@ -31,8 +30,8 @@ exports.parseChar = (store, var_store, node) => {
 	if (i < input.length)
 	{
 		//console.log(var_store)
-		//console.log(state, case_, var_store['parsing_checks'])
-		if (var_store['parsing_checks'][state][case_](store, var_store))
+		// console.log(state_name, var_store['parsing_checks'])
+		if (var_store['parsing_checks'][state_name](store, var_store))
 		{
 			var_store['i'] += 1
 			//var_store['validate_vars']['k'] += 1
