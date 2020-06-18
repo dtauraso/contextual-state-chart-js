@@ -1,4 +1,7 @@
 # Calculator
+
+This project is in the process of being refurbished, so it's not working at the moment.
+
 This program uses a hierarchy of state graphs to emulate a calculator. More examples are given.
 
 Use the node start.js command to run
@@ -6,20 +9,17 @@ Use the node start.js command to run
 uses node 12 and ES5 syntax
 
 what it does do?
-runs through the states in preorder traversal using a stack
+runs through the states in preorder traversal using a linked list
 prints state sequence through the hierarchy
 quits when the machine can't continue
 
+Upgrade plan from the up to date version using Redux
 
-It's refurbished from the newer design in the redux version [here]
-change state, case_ to 'state case_0', 'state case_1
-clean up the logic using the new version
-
-what am I keeping?
+what am I keeping in this version?
 ES5 syntax
-stack based hierarchy tracking(to keep the logic iterative)
+linked list based hierarchy tracking(to keep the logic iterative)
 
-what am I not adding?
+what am I not adding from the Redux version?
 before and after var changes tracking system
 hierarchical state sequence tracking
 result of submachine returning true or false

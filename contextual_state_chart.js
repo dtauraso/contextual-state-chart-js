@@ -91,111 +91,7 @@ exports.getIndents = (count) => {
 	}
 }
 
-exports.isBottomAtTheParentOfCurrentState = (parents, bottom_state_name) => {
 
-	// parents is a list of strings
-	for(var p in parents)
-	{
-		let parent = parents[p]
-
-		// let parent_case = parent_cases[p][1]
-		//console.log(bottom_state, parent, bottom_case, parent_case)
-		//console.log(bottom_state == parent, bottom_case == parent_case)
-		//console.log(bottom_state === parent, bottom_case === parent_case)
-		//console.log(typeof(bottom_state), typeof(parent), typeof(bottom_case), typeof(parent_case))
-
-		if(bottom_state_name === parent)
-		{
-			return true
-		}
-	}
-	return false
-}
-exports.getNextStates = (parent/*tracker*/, continuing_next_states, indents, graph) => {
-
-	console.log({parent, continuing_next_states, indents})
-	if(parent === null)
-	{
-		return [null, [], indents]
-	}
-	var state_name = parent.current_parent
-	// var case1 = tracker.child[1]
-	//console.log("tracker")
-	//console.log(tracker)
-	/*
-	old idea
-		move up and check
-
-	doens't work as we need to check first
-
-	while we are on a valid node
-		if it has what we want
-			return node and next states
-		else
-			move to the next node
-	return null and next states as empty list
-
-	*/
-	// todo: need to delete the bottom of the list as we ascend it, not ignore it
-	// continues untill there are no next states to obtain
-	while (parent !== null)
-	{
-		indents -= 1 // is this the right place for it?
-		if(graph['node_graph2'][state_name]['next'].length > 0)
-		{
-			return [parent, graph['node_graph2'][state_name]['next'], indents]
-		}
-		
-		console.log({parent}, parent.current_parent)
-		parent = parent.grand_parent
-		state_name = parent.current_parent
-		// case1 = tracker.child[1]
-		//console.log(tracker)
-		//console.log(state1, case1)			
-
-		// need to exit the main loop
-		// if (state_name === 'root 0')
-		// {
-		// 	//console.log("here")
-
-		// 	continuing_next_states = []
-		// 	return [tracker, continuing_next_states, indents]
-		// }
-
-		// continuing_next_states = graph['node_graph2'][state_name]['next']//Object.entries(graph['node_graph2'][state1]['next'][case1])
-		//console.log(continuing_next_states)
-		//console.log(tracker)
-
-	}
-	return [null, [], indents]
-
-}
-exports.makeNextStates = (next_states) => {
-	var new_nex_states = []
-
-
-	console.log('here', {next_states})
-	for(var n in next_states)
-	{
-		if (typeof(next_states[n][1]) === 'object')
-		{
-			let next_state = next_states[n][0]
-			for(var o in next_states[n][1])
-			{
-				new_nex_states.push([next_state, next_states[n][1][o]])
-
-			}
-
-		}
-		else
-		{
-			new_nex_states.push([next_states[n][0], next_states[n][1]])
-		}
-
-	}
-
-	return new_nex_states
-}
 exports.printLevel = (graph, state_name, indents, m, chosen_level) => {
 
 	if (indents === chosen_level)
@@ -239,12 +135,63 @@ exports.printVarStore = (graph) => {
 	return '|' + graph['input'][m] + '|'
 
 }
+exports.addParent = (graph, current_state_object, parent) => {
+	let parents = graph['node_graph2'][current_state_object]['parents']
+	let new_head = null
+	let grand_parent = null
+
+	if(parent !== null && parents.includes(parent.current_parent)) {
+		grand_parent = parent.current_parent
+	}
+	new_head = new ListNode(state_name, grand_parent)
+
+	return new_head
+
+}
+exports.visitNode = (graph, next_state, state_metrics) => {
+	
+	if(next_state === undefined) {
+		console.log("the js syntax for the next states is wrong")
+		return state_metrics
+	}
+	// last round was a pass
+	if(state_metrics['passes']) {
+		return state_metrics
+	}
+	let state =  graph['node_graph2'][next_state]
+	if(!Object.keys(state).includes('function')) {
+		console.log(state, "doesn't have a function")
+		return state_metrics
+	}
+	let success = state['function'](next_state, graph, next_state)
+	if(!success) {
+		return state_metrics
+	}
+	state_metrics['passes'] = true
+	state_metrics['winning_state_name'] = next_state
+	return state_metrics
+}
+exports.moveUpParentAndDockIndents = (machine_metrics) => {
+	let parent = machine_metrics['parent']
+	while(parent !== null) {
+		machine_metrics['indents'] -= 1
+		if(graph['node_graph2'][parent]['next'].length > 0) {
+			machine_metrics['parent'] = parent
+			return machine_metrics
+		}
+		else {
+			parent = parent.grand_parent
+		}
+	}
+	machine_metrics['parent'] = null
+	return machine_metrics
+}
 exports.visitRedux = (node, end_state/*, store*/, graph, indents, optional_parameter) => {
 	// does depth first tranversal for each subgraph(each subgraph is a state name that has children)
 	// does breath first traversal for within each subgraph
 	let x = node[0]
 	let y = node[1]
-    var next_states = [node]
+    // var next_states = [node]
     var action = {}
 	var bottom = []
 	// parent3 -> parent2 -> parent1 -> null
@@ -253,293 +200,69 @@ exports.visitRedux = (node, end_state/*, store*/, graph, indents, optional_param
 	// when machine is over
 		// delete nodes from head till we find one with next states length > 0
 	// assumes state_name actually runs
-	let parent = null//new ChildParent('root 0', null)
+	// let parent = null//new ChildParent('root 0', null)
 	// bottom.push(parent)
 	var ii = 0
 	// to target a start point and end point
 	// start from the state state
 	// assume the end state is actually and end state
 	//console.log(getIndents(indents), 'start state', node)
-    while(next_states.length != 0)
+	// make a single js object holding all the variables and pass it into the functions
+	let machine_metrics = {
+		next_states: [node],
+		parent: null,
+		indents: indents
+	}
+    while(machine_metrics['next_states'].length != 0)
     {
-
-		
     	//console.log(ii)
 		//printStack(bottom)
-        if(ii == 150)
+        if(ii == 1)
         {
 			console.log('we are out of states')
 			process.exit()
         }
 
 		//console.log(getIndents(indents), 'next_states', next_states)
-
-		// var state = ''
-		// var case_ = 0
-		var state_changed = false
-
-		let passes = false
-        let winningStateName = ''
-
+		let state_metrics = {
+			passes: false,
+			winning_state_name: ''
+		}
 		// machine will stop running if all have failed(there must be more than 0 states for this to be possible) or error state runs
 		// loop ends after the first state passes
-		next_states.forEach(next_state => {
-
-			if(next_state === undefined) {
-                console.log("the js syntax for the next states is wrong")
-                return null
-
-            }
-
-			if(passes) {
-                return null
-			}
-			let state =  graph['node_graph2'][state_name]
-			if(!Object.keys(state).includes('function')) {
-				console.log(state, "doesn't have a function")
-                return null
-			}
-
-			let success = state['function'](state_name, graph, state_name)
-			if(!success) {
-				return null
-			}
-			passes = true
-			winningStateName = next_state
+		machine_metrics['next_states'].forEach(next_state => {
+			state_metrics = exports.visitNode(graph, next_state, state_metrics)
 		})
+		console.log(state_metrics)
 		// current state is an end state
-		if(next_states.length === 0) {
+		if(machine_metrics['next_states'].length === 0) {
 			// we are at an end state
-			// traverse up the parent list to get to the next level
+			// traverse up the parent list to get to the next level(1 function)
+			machine_metrics = exports.moveUpParentAndDockIndents(machine_metrics)
 		}
         // current state is not an end state
-
-		else if (passes) {
-			// if the state is a parent
-				// add to parent list
-				// setup next states with children
-			// else
-				// setup next states with state's next states
-		}
-        for(var j = 0, len = next_states.length ; j < len; j++)
-        {
-			state_name = next_states[j]
-			// case_ = next_states[j][1]
-
-			/*
-			if(state === 'root' && case_ === '0')
-			{
-
+		else if (state_metrics['passes']) {
+			let current_state = state_metrics['winning_state_name']
+			let current_state_object = graph['node_graph2'][current_state]
+			if(Object.keys(current_state_object).includes('children')) {
+				// the state passed and it has chldren
+				machine_metrics['parent'] = exports.addParent(	graph,
+																current_state_object,
+																machine_metrics['parent'])
+				 machine_metrics['indents'] += 1
+				 machine_metrics['next_states'] = graph['node_graph2'][ state_name ]['children']
 			}
-			*/
-            //action = {type: state, case_: case_}
-            //store.dispatch(action)
-            //console.log('state, case')
-            //console.log(state, case_)
-            // should be children, then check if they have a parent?
-			// will only work for nodes that have children
-			console.log( state_name )
-
-			// let children = graph['node_graph2'][ state_name ]['children']
-			// let recursive_option = graph['recursive_option']
-
-			// seems to work on functions of the form f(x)
-			// https://stackoverflow.com/questions/11107823/what-happens-if-i-dont-pass-a-parameter-in-a-javascript-function
-			let did_function_pass = graph['node_graph2'][state_name]['function'](state_name, graph, state_name)
-
-			/*
-			if !state passed
-				exit
-			
-			if the top of stack has an empty item
-				state is a child and put it in the item
-
-			if state is parent
-				push empty item to stack
-				(the next state is a child then so it's added to the empty item next round)
-			*/
-			if (did_function_pass)
-			{
-				// if state is parent
-					// add it as head
-					// next states =  children states
-				// else
-					// next states = state's next states
-				
-				// special early exit state
-				if (state_name == 'error')
-	            {
-	            	console.log('you have invalid input')
-	            	process.exit()
-				}
-				
-				// can we assume the state is a parent if it has children?
-				// that idea worked for redux
-				// needs to always check before the isParent
-				// is this node a child of the last state run?
-				// if (exports.hasParent(graph, state, case_))
-				// {
-				// 	// push the state to the bottom if bottom happens to be one of state's parents
-				// 	// only checks the state and not the case
-				// 	let bottom_state = bottom[0].child[0]
-				// 	let bottom_case = bottom[0].child[1]
-				// 	// change
-				// 	let parent_cases = Object.entries(graph['node_graph2'][state]['parents'][case_])//Object.entries(graph['parents'][state][case_])
-				// 	//console.log(parent_cases)
-				// 	parent_cases = exports.makeNextStates(parent_cases)
-				// 	if (exports.isBottomAtTheParentOfCurrentState(parent_cases, bottom_state, bottom_case))
-				// 	{
-				// 		let new_parent = new ChildParent([state, case_], bottom[0])
-				// 		// link passing state to its parent on bottom of stack, extending the stack by 1, vertically
-				// 		bottom[0] = new_parent
-				// 		indents += 1
-				// 	}
-
-
-				// }
-				// console.log({children})
-
-				// children = graph['node_graph2'][ state ]['children'][ case_ ]
-				// for when passing the current state(it is in the current next states) has a child(called next states)
-				if(Object.keys(graph['node_graph2'][ state_name ]).includes('children'))
-				{
-
-					if (graph['node_graph2'][ state_name ]['children'].length > 0)
-					{
-						// console.log({children})
-						// add passing state horizontally
-						// what does parent.child mean?
-						// parent.child = state_name
-						// bottom[0].child = state_name
-	
-						// let bottom_state_name = bottom[0].child
-						// let bottom_case = bottom[0].child[1]
-						// change
-						let parents = graph['node_graph2'][state_name]['parents']//Object.entries(graph['parents'][state][case_])
-						// console.log(parent_cases)
-						console.log('parents')
-						// parent_cases = exports.makeNextStates(parent_cases)
-						let new_head = null
-						if(parent === null) {
-							new_head = new ListNode(state_name, null)
-						}
-						else if(parents.includes(parent.current_parent)) {
-							new_head = new ListNode(state_name, parent.current_parent)
-						}
-						parent = new_head
-						indents += 1
-
-						// if (exports.isBottomAtTheParentOfCurrentState(parents, bottom_state_name))
-						// {
-						// 	console.log('here')
-						// 	debugger
-						// 	let new_parent = new ListNode(state_name, bottom[0])
-						// 	console.log({new_parent})
-						// 	// fail
-						// 	// link passing state to its parent on bottom of stack, extending the stack by 1, vertically
-						// 	bottom[0] = new_parent
-						// 	indents += 1
-						// }
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-						// getting the children
-						// let children = Object.entries(graph['node_graph2'][state]['children'][case_])
-						console.log('children')
-						next_states = graph['node_graph2'][ state_name ]['children']//exports.makeNextStates(children)
-						// next_states = []
-						// for(var i in children)
-						// {
-						// 	next_states.push(children[i])
-						// }
-	
-						let m = graph['i']
-						exports.printLevelsBounds(graph, state_name, indents, m, graph['input'].length, 0, -1)
-	
-	
-	
-					}
-				}
-				
-				// for when passing the current state(it is in the current next states) does not have a child but has neighbor states(called next states)
-				else
-				{
-					if(Object.keys(graph['node_graph2'][state_name]).includes('next'))
-					{
-						next_states = graph['node_graph2'][state_name]['next']
-
-					}
-					else
-					{
-						next_states = []
-					}
-					let m = graph['i']
-					// next_states = exports.makeNextStates(next_states)
-
-					exports.printLevelsBounds(graph, state_name, indents, m, graph['input'].length, 0, -1)
-					// add passing state horizontally
-					// bottom[0].child = state_name
-
-				}
-
-				state_changed = true
-
-				break
+			// no children but next states
+			else if(Object.keys(current_state_object).includes('next')) {
+				machine_metrics['next_states'] = graph['node_graph2'][state_name]['next']
 			}
-
-			console.log({parent})
-			console.log({result: graph['expression']})
-
-			console.log()
-
+			// no children and no next states
+			else {
+				// next_states.length === 0 will catch it next round
+				machine_metrics['next_states'] = []
+			}
 		}
-		console.log(next_states)
-		// we want to leave the machine here
-		if(state_name === end_state)
-		{
-			// console.log("done")
-			break
-		}
-		//printStack(bottom)
-		if (next_states.length === 0)
-		{
-			// move up list, deleting parents untill we hit null or an array of next states > 0
-
-			// console.log("here")
-			// have linked list representing the stack
-			// first item is in bottom[0]
-
-			// travel up stack untill either hits root or hits neighbors of a prev visited level
-			let tracker_continuing_next_states_indents = exports.getNextStates(parent, next_states, indents, graph)
-
-			parent = tracker_continuing_next_states_indents[0]
-			next_states = tracker_continuing_next_states_indents[1]
-			indents = tracker_continuing_next_states_indents[2]
-
-
-			// bottom[0] = tracker
-			// next_states = continuing_next_states
-
-			state_changed = true
-			// might not actually be true ever
-			/*
-			if (tracker == null)
-			{
-				console.log('done runing machine')
-			}*/
-			//console.log(next_states)
-			//printStack(bottom)
-
-		}
-
+       
         // if all fail then all will be rerun unless this condition is here
         if(!state_changed && next_states.length > 0)
         {
