@@ -216,7 +216,7 @@ exports.visitRedux = (node, end_state/*, store*/, graph, indents, optional_param
 		parent: null,
 		indents: indents
 	}
-    while(machine_metrics['next_states'].length != 0)
+    while(machine_metrics['next_states'].length > 0)
     {
     	//console.log(ii)
 		//printStack(bottom)
@@ -266,15 +266,46 @@ exports.visitRedux = (node, end_state/*, store*/, graph, indents, optional_param
 		else {
 			// submachine fails
 			// if this was recursive this case would return to the children check case above
+			// frogot the loop for when machine_metrics['parent'].ith_parent >= children.length
 			// got up 1 parent as this machine has failed and we have to go to the supermachine
+
+			// start our next states at the next state to test as we have already tested [0, ith_parent] states
+
+			// 2 level dead branch
 			machine_metrics['parent'] = machine_metrics['parent']['grand_parent']
 			machine_metrics['indents'] -= 1
-			machine_metrics['parent'].ith_parent += 1
-			const ith_parent = machine_metrics['parent'].ith_parent
-			const current_state = machine_metrics['parent'].current_parent
-			// start our next states at the next state to test as we have already tested [0, ith_parent] states
-			const children = graph['node_graph2'][current_state]['children']
-			machine_metrics['next_states'] = children.slice(ith_parent, children.length)
+
+
+			// 2+ level dead branch
+			// skip over all ith parents that have no more siblings
+			// primary loop guard
+			// process parent if it exists
+			// TODO: test this loop
+			while(machine_metrics['parent'] !== null) {
+
+				machine_metrics['parent'].ith_parent += 1
+
+				let ith_parent = machine_metrics['parent'].ith_parent
+				let current_state = machine_metrics['parent'].current_parent
+				let children = graph['node_graph2'][current_state]['children']
+
+				// secondary loop exit
+				// we are done if there is at least 1 unrun sibling
+				if(ith_parent < children.length) {
+					machine_metrics['next_states'] = children.slice(ith_parent, children.length)
+					break
+					// return machine_metrics
+				}
+				machine_metrics['parent'] = machine_metrics['parent']['grand_parent']
+				machine_metrics['indents'] -= 1
+			}
+
+			// ith_parent < children.length was never true
+			if(machine_metrics['parent'] === null) {
+				machine_metrics['next_states'] = []
+
+			}
+			// return machine_metrics
 
 			// console.log(next_states, 'have failed so your state machine is incomplete')
             // fail

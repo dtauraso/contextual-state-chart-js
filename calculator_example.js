@@ -375,6 +375,7 @@ var vars = {
 				'function': returnTrue,
 				'next': ['validate 0', 'invalid 0'],
 				'children': ['char 0']
+				// make a dead branch here 2 children levels minimum
 			},
 				
 			
