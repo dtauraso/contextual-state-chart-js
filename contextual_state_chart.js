@@ -59,9 +59,10 @@ exports.hasParent = (graph, state_name) => {
 	//console.log(Object.keys(graph['node_graph2'][state]['parents'][case_]))
 	return graph['node_graph2'][state_name]['parents'].length > 0//Object.keys(graph['parents'][state][case_]).length > 0
 }
-function ListNode (current_parent, grand_parent) {
+function ListNode (current_parent, ith_parent, grand_parent) {
 
 	this.current_parent = current_parent
+	this.ith_parent = ith_parent
 	this.grand_parent = grand_parent
 }
 exports.getIndents = (count) => {
@@ -143,7 +144,7 @@ exports.addParent = (graph, current_state_object, parent) => {
 	if(parent !== null && parents.includes(parent.current_parent)) {
 		grand_parent = parent.current_parent
 	}
-	new_head = new ListNode(state_name, grand_parent)
+	new_head = new ListNode(state_name, 0, grand_parent)
 
 	return new_head
 
@@ -177,6 +178,7 @@ exports.moveUpParentAndDockIndents = (machine_metrics) => {
 		machine_metrics['indents'] -= 1
 		if(graph['node_graph2'][parent]['next'].length > 0) {
 			machine_metrics['parent'] = parent
+
 			return machine_metrics
 		}
 		else {
@@ -184,6 +186,7 @@ exports.moveUpParentAndDockIndents = (machine_metrics) => {
 		}
 	}
 	machine_metrics['parent'] = null
+	machine_metrics['next'] = []
 	return machine_metrics
 }
 exports.visitRedux = (node, end_state/*, store*/, graph, indents, optional_parameter) => {
@@ -234,17 +237,14 @@ exports.visitRedux = (node, end_state/*, store*/, graph, indents, optional_param
 			state_metrics = exports.visitNode(graph, next_state, state_metrics)
 		})
 		console.log(state_metrics)
-		// current state is an end state
-		if(machine_metrics['next_states'].length === 0) {
-			// we are at an end state
-			// traverse up the parent list to get to the next level(1 function)
-			machine_metrics = exports.moveUpParentAndDockIndents(machine_metrics)
-		}
-        // current state is not an end state
-		else if (state_metrics['passes']) {
+
+		// current state passes
+		if (state_metrics['passes']) {
 			let current_state = state_metrics['winning_state_name']
 			let current_state_object = graph['node_graph2'][current_state]
-			if(Object.keys(current_state_object).includes('children')) {
+			const state_keys = Object.keys(current_state_object)
+			// current state is a parent
+			if(state_keys.includes('children')) {
 				// the state passed and it has chldren
 				machine_metrics['parent'] = exports.addParent(	graph,
 																current_state_object,
@@ -252,25 +252,33 @@ exports.visitRedux = (node, end_state/*, store*/, graph, indents, optional_param
 				 machine_metrics['indents'] += 1
 				 machine_metrics['next_states'] = graph['node_graph2'][ state_name ]['children']
 			}
-			// no children but next states
-			else if(Object.keys(current_state_object).includes('next')) {
+			// current state is not a parent but has next states
+			else if(state_keys.includes('next')) {
 				machine_metrics['next_states'] = graph['node_graph2'][state_name]['next']
 			}
-			// no children and no next states
+			// curent state is not a parent and has no next states
 			else {
-				// next_states.length === 0 will catch it next round
-				machine_metrics['next_states'] = []
+				// we are done with machine at the current level
+				machine_metrics = exports.moveUpParentAndDockIndents(machine_metrics)
+
 			}
 		}
-       
-        // if all fail then all will be rerun unless this condition is here
-        if(!state_changed && next_states.length > 0)
-        {
+		else {
+			// submachine fails
+			// if this was recursive this case would return to the children check case above
+			// got up 1 parent as this machine has failed and we have to go to the supermachine
+			machine_metrics['parent'] = machine_metrics['parent']['grand_parent']
+			machine_metrics['indents'] -= 1
+			machine_metrics['parent'].ith_parent += 1
+			const ith_parent = machine_metrics['parent'].ith_parent
+			const current_state = machine_metrics['parent'].current_parent
+			// start our next states at the next state to test as we have already tested [0, ith_parent] states
+			const children = graph['node_graph2'][current_state]['children']
+			machine_metrics['next_states'] = children.slice(ith_parent, children.length)
 
-
-            console.log(next_states, 'have failed so your state machine is incomplete')
-            fail
-        }
+			// console.log(next_states, 'have failed so your state machine is incomplete')
+            // fail
+		}
         ii += 1
     }
 

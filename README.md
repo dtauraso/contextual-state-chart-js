@@ -22,5 +22,4 @@ linked list based hierarchy tracking(to keep the logic iterative)
 what am I not adding from the Redux version?
 before and after var changes tracking system
 hierarchical state sequence tracking
-result of submachine returning true or false
 
