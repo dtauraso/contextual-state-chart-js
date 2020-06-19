@@ -137,14 +137,15 @@ exports.printVarStore = (graph) => {
 
 }
 exports.addParent = (graph, current_state_object, parent) => {
-	let parents = graph['node_graph2'][current_state_object]['parents']
+	// console.log(current_state_object, graph['node_graph2'][current_state_object.name])
+	let parents = graph['node_graph2'][current_state_object.name]['parents']
 	let new_head = null
 	let grand_parent = null
 
 	if(parent !== null && parents.includes(parent.current_parent)) {
 		grand_parent = parent.current_parent
 	}
-	new_head = new ListNode(state_name, 0, grand_parent)
+	new_head = new ListNode(current_state_object.name, 0, grand_parent)
 
 	return new_head
 
@@ -172,21 +173,28 @@ exports.visitNode = (graph, next_state, state_metrics) => {
 	state_metrics['winning_state_name'] = next_state
 	return state_metrics
 }
-exports.moveUpParentAndDockIndents = (machine_metrics) => {
+exports.moveUpParentAndDockIndents = (graph, machine_metrics) => {
+	// doesn't work
+	// only moves it up when there are no next states
+	// what about the current parent being done by definition?
 	let parent = machine_metrics['parent']
-	while(parent !== null) {
+	while(parent.current_parent !== null) {
 		machine_metrics['indents'] -= 1
-		if(graph['node_graph2'][parent]['next'].length > 0) {
+		// problem here
+		console.log(parent, graph['node_graph2'][parent.current_parent])
+		if(graph['node_graph2'][parent.current_parent]['next'].length > 0) {
 			machine_metrics['parent'] = parent
 
 			return machine_metrics
 		}
 		else {
+			// we are at a parent end state
+
 			parent = parent.grand_parent
 		}
 	}
 	machine_metrics['parent'] = null
-	machine_metrics['next'] = []
+	machine_metrics['next_states'] = []
 	return machine_metrics
 }
 exports.visitRedux = (node, end_state/*, store*/, graph, indents, optional_parameter) => {
@@ -205,7 +213,7 @@ exports.visitRedux = (node, end_state/*, store*/, graph, indents, optional_param
 	// assumes state_name actually runs
 	// let parent = null//new ChildParent('root 0', null)
 	// bottom.push(parent)
-	var ii = 0
+	var i = 0
 	// to target a start point and end point
 	// start from the state state
 	// assume the end state is actually and end state
@@ -220,7 +228,8 @@ exports.visitRedux = (node, end_state/*, store*/, graph, indents, optional_param
     {
     	//console.log(ii)
 		//printStack(bottom)
-        if(ii == 1)
+		// 94th state run is last one correct
+        if(i == 98)
         {
 			console.log('we are out of states')
 			process.exit()
@@ -236,10 +245,11 @@ exports.visitRedux = (node, end_state/*, store*/, graph, indents, optional_param
 		machine_metrics['next_states'].forEach(next_state => {
 			state_metrics = exports.visitNode(graph, next_state, state_metrics)
 		})
-		console.log(state_metrics)
+		console.log({machine_metrics, state_metrics, graph})
 
+		// never left the split submachine
 		// current state passes
-		if (state_metrics['passes']) {
+		if(state_metrics['passes']) {
 			let current_state = state_metrics['winning_state_name']
 			let current_state_object = graph['node_graph2'][current_state]
 			const state_keys = Object.keys(current_state_object)
@@ -250,17 +260,23 @@ exports.visitRedux = (node, end_state/*, store*/, graph, indents, optional_param
 																current_state_object,
 																machine_metrics['parent'])
 				 machine_metrics['indents'] += 1
-				 machine_metrics['next_states'] = graph['node_graph2'][ state_name ]['children']
+				 machine_metrics['next_states'] = graph['node_graph2'][current_state]['children']
 			}
 			// current state is not a parent but has next states
 			else if(state_keys.includes('next')) {
-				machine_metrics['next_states'] = graph['node_graph2'][state_name]['next']
+				machine_metrics['next_states'] = graph['node_graph2'][current_state]['next']
 			}
-			// curent state is not a parent and has no next states
+			// curent state is not a parent and has no next states (end state)
 			else {
+				console.log('done with machine')
 				// we are done with machine at the current level
-				machine_metrics = exports.moveUpParentAndDockIndents(machine_metrics)
-
+				// we can actually have an end state with parents, the empby next states will still be found with this
+				// machine_metrics['indents'] -= 1
+				// machine_metrics['parent'] = machine_metrics['parent'].grand_parent
+				machine_metrics = exports.moveUpParentAndDockIndents(graph, machine_metrics)
+				const current_state = machine_metrics['parent'].current_parent
+				machine_metrics['next_states'] = graph['node_graph2'][current_state]['next']
+				console.log(machine_metrics)
 			}
 		}
 		else {
@@ -271,12 +287,12 @@ exports.visitRedux = (node, end_state/*, store*/, graph, indents, optional_param
 
 			// start our next states at the next state to test as we have already tested [0, ith_parent] states
 
-			// 2 level dead branch
+			// 2 level dead path
 			machine_metrics['parent'] = machine_metrics['parent']['grand_parent']
 			machine_metrics['indents'] -= 1
 
 
-			// 2+ level dead branch
+			// 2+ level dead path
 			// skip over all ith parents that have no more siblings
 			// primary loop guard
 			// process parent if it exists
@@ -310,7 +326,7 @@ exports.visitRedux = (node, end_state/*, store*/, graph, indents, optional_param
 			// console.log(next_states, 'have failed so your state machine is incomplete')
             // fail
 		}
-        ii += 1
+        i += 1
     }
 
     //console.log(getIndents(indents), '1state machine is finished', '|'+ state + '|', case_)
