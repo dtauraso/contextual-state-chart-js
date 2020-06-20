@@ -377,7 +377,8 @@ var vars = {
 				'children': ['char 0']
 				// make a dead branch here 2 children levels minimum
 			},
-				
+			// add some red herrings that return true and some that return false to
+			// test the add head and drop head and submachine failure cases of levels 2 and 3
 			
 			// 'split' :
 			// 	{'next': {'0': {'validate':'0', 'invalid':'0'}},
@@ -629,7 +630,7 @@ var vars = {
 					'parents': ['evaluate_expression 0'],
 					'name': 'value_ignore valid_op',
 					'function': validOp,
-					'nexts': ['op 0']
+					'next': ['op 0']
 				},
 					
 				
@@ -690,6 +691,6 @@ var nodeReducer4 = (state = {vars}, action) => {
 // ['split', '0'], ['input_has_1_value', '0'] define a the start point and end point
 // through the state chart
 // ['input_has_1_value', '0']
-hcssm.visitRedux('split 0', 'input_has_1_value 0'/*, calculator_reducer*/, vars, -1)
+hcssm.visitRedux('split 0', 'input_has_1_value 0'/*, calculator_reducer*/, vars, 0)
 
 console.log('done w machine')
