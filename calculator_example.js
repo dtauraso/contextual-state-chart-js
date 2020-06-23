@@ -344,6 +344,26 @@ var parsing_checks = {
 	'  0': isWhiteSpace,
 
 }
+/*
+cases for state machine failures
+these refer to when a submachine fails that started from a child of the supermachine(parent state)
+cases 1, 2, 3 have 2 parts
+	first part is for paths of length 2
+	secon part is for paths of length > 2
+1) the ith child was wrong and there is an (i+j)th correct child where j >= 1 (we can continue)(passes)
+2) the ith child was wrong and it's the last child in list (we may be able to continue)
+3) the ith child is wrong and it's not possible to find any other children to try from the parent linked list
+	case 2 but for depth(we cannot continue)
+
+how the cases map to each other
+1 -> 1
+2 -> 1 | 3
+3 -> 3
+Most of the branches testing these cases will deviate from the graph solving the calculator problem
+
+case 3 will be tested using an extra branch first, then will use input to allow the machine to work and test all cases
+
+*/
 
 var vars = {
 	'input' : /* passes '1 + 2 + 3 + 4',*//*'1 + 2 + 3 + 4 - 5 + 6 + 7 - 8 - 9 + 10 + 11 + 12',*//*'1+',*//*'1 +2',*/'1 + 2 + 3 + 4 - 5 + 6 * 7 - 8 - 9 + 10 * 11 + 12', // '1 '
@@ -370,13 +390,47 @@ var vars = {
 			// {'next': {'0': {}}, 'children':{'0': {}}, 'functions':{'0'}}
 			
 			'split 0': {
-				'parents': ['root 0'],
 				'name': 'split 0',
 				'function': returnTrue,
 				'next': ['validate 0', 'invalid 0'],
-				'children': ['char 0']
+				'children': [	'partOfDeathPath 0'/* case 1 length 2 */,
+								'partOfDeathPath 1'/* case 1 length > 2 */, 'char 0']
 				// make a dead branch here 2 children levels minimum
 			},
+			'partOfDeathPath 0': {
+				'parents': ['split 0'],
+				'name': 'partOfDeathPath 0',
+				'function': returnTrue,
+				'next': ['deadEndState 0']
+			},
+			'deadEndState 0': {
+				'parents': ['split 0'],
+				'name': 'deadEndState 0',
+				'function': returnFalse,
+			},
+
+			'partOfDeathPath 1': {
+				'parents': ['split 0'],
+				'name': 'partOfDeathPath 1',
+				'function': returnTrue,
+				'next': ['deadEndState 1'],
+				'children': ['deadIntermediateState 0']
+			},
+			'deadEndState 1': {
+				'parents': ['split 0'],
+				'name': 'deadEndState 1',
+				'function': returnFalse,
+			},
+			'deadIntermediateState 0': {
+				'parents': ['partOfDeathPath 1'],
+				'name': 'deadIntermediateState 0',
+				'function': returnFalse
+			},
+
+
+
+
+
 			// add some red herrings that return true and some that return false to
 			// test the add head and drop head and submachine failure cases of levels 2 and 3
 			
@@ -450,7 +504,7 @@ var vars = {
 			// 	'functions':{'0':returnTrue},
 			// 	'parents':	{'0':{}}},
 
-			
+			// make death paths starting here to force entire machine to fail
 			'input_has_1_value 0': {
 				'parents': [],
 				'name': 'input_has_1_value 0',
