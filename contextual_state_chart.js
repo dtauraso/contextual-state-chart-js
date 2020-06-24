@@ -372,10 +372,13 @@ exports.visitRedux = (node, end_state/*, store*/, graph, indents, optional_param
 				let current_state = machine_metrics['parent'].current_parent
 				let children = graph['node_graph2'][current_state]['children']
 
+				/* case 1 length 2 */
 				if(ith_parent < children.length) {
 					machine_metrics['next_states'] = children.slice(ith_parent, children.length)
 				}
+				/* 	case 2 length 2 -> case 3 length 2 */
 				else {
+					// testing this means the machine will have to fail
 					machine_metrics['next_states'] = []
 				}
 				console.log({machine_metrics})
@@ -405,8 +408,8 @@ exports.visitRedux = (node, end_state/*, store*/, graph, indents, optional_param
 					console.log({machine_metrics, current_parent})
 
 					let children = graph['node_graph2'][current_parent]['children']
-
 					// secondary loop exit
+					/* 	case 1 length > 2 */
 					// we are done if there is at least 1 unrun child
 					if(ith_parent < children.length) {
 		
@@ -414,6 +417,10 @@ exports.visitRedux = (node, end_state/*, store*/, graph, indents, optional_param
 						break
 						// return machine_metrics
 					}
+					// console.log('here')
+					// fail
+
+					// case 2 length > 2 -> case 1 length > 2 as we are still inside the loop
 					machine_metrics['parent'] = machine_metrics['parent'].grand_parent
 					machine_metrics['indents'] -= 1
 				}
@@ -434,6 +441,7 @@ exports.visitRedux = (node, end_state/*, store*/, graph, indents, optional_param
 					// that state is not findable
 				// have a parent state that doesn't have a next as root?
 				// this will be false if the entire machine doens't fail
+				/* case 2 length > 2 -> case 3 length > 2 as we left the loop in case 2 length > 2 */
 				if(machine_metrics['parent'] === null) {
 					// this will only be true if the entire machine fails
 					// there should not be any more states to visit as the last parent failed
