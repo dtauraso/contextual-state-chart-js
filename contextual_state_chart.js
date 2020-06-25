@@ -93,43 +93,25 @@ exports.getIndents = (count) => {
 }
 
 
-exports.printLevel = (graph, state_name, indents, m, chosen_level) => {
-
-	if (indents === chosen_level)
-	{
-		console.log(exports.getIndents(indents), '|'+ state_name + '|', 'passed', 'i', '|' + graph['input'][m] + '|', m)
-
-	}
-
-}
-
-exports.printLevels = (graph, state_name, indents, m, chosen_level) => {
-
-	if (indents >= chosen_level)
-	{
-		console.log(exports.getIndents(indents), '|'+ state_name + '|', 'passed', 'i', '|' + graph['input'][m] + '|', m)
-
-	}
-
-}
 
 // the state printing algorithm
 exports.printLevelsBounds = (ith_state, graph, state_name, indents) => {
+	let our_string = graph['input']
+	if(typeof our_string === 'object') {
+		// console.log('object')
+		// console.log(our_string)
+		our_string = our_string.join(' ')
+		// console.log(our_string)
 
-	console.log(`${ith_state} ${exports.getIndents(indents)} ( ${state_name} f=${graph['node_graph2'][state_name]['function'].name}, ${indents} | a= ${graph['operation_vars']['a']} | b= ${graph['operation_vars']['b']})`)
-	// if (indents >= chosen_start_level && indents <= chosen_end_level)
-	// {
-	// 	console.log(exports.getIndents(indents), '('+''+ state_name + '' + ')', 'passed', '|' + graph['input'][m] + '|'/*,'i ='*/, m/*, input_length*/)
-	// 	//console.log()
-
-	// }
-	// else if (indents >= chosen_start_level && chosen_end_level === -1)
-	// {
-	// 	console.log(exports.getIndents(indents), '('+ state_name + ',', 'f=' + graph['node_graph2'][state_name]['function'].name + ',', indents + ')')//, '|' + graph['input'][m] + '|'/*,'i ='*/, m/*, input_length*/)
-	// 	//console.log()
+	}
+	// else {
+	// 	console.log(our_string)
 
 	// }
-
+	// console.log(`${graph['input']}`)
+	// let our_string = `${graph['input']}`
+	// console.log(our_string.slice(','))
+	console.log(`Round #: ${ith_state} ${exports.getIndents(indents)} | state name = '${state_name}' | level = ${indents} | function = ${graph['node_graph2'][state_name]['function'].name} | a = ${graph['operation_vars']['a']} | expression = ${our_string}\n`)
 }
 
 exports.printVarStore = (graph) => {
@@ -146,7 +128,7 @@ exports.addParent = (graph, machine_metrics, current_state_object) => {
 	let parents = graph['node_graph2'][current_state_object.name]['parents']
 	// old parent
 	let parent = machine_metrics['parent']
-	console.log('old parent', parent)
+	// console.log('old parent', parent)
 	let new_head = null
 	let grand_parent = null
 
@@ -189,11 +171,11 @@ exports.moveUpParentAndDockIndents = (graph, machine_metrics) => {
 
 	// how do we know when the parent is supposed to move on or not?
 	let parent = machine_metrics['parent']
-	console.log('traveling up parent', machine_metrics)
+	// console.log('traveling up parent', machine_metrics)
 	while(parent !== null) {
 		machine_metrics['indents'] -= 1
 		// problem here
-		console.log({parent, state: graph['node_graph2'][parent.current_parent]})
+		// console.log({parent, state: graph['node_graph2'][parent.current_parent]})
 		if(graph['node_graph2'][parent.current_parent]['next'].length > 0) {
 
 
@@ -308,13 +290,13 @@ exports.visitRedux = (node, end_state/*, store*/, graph, indents, optional_param
 				machine_metrics['parent'] = exports.addParent(	graph,
 																machine_metrics,
 																current_state_object)
-				console.log('new parent', machine_metrics['parent'])
+				// console.log('new parent', machine_metrics['parent'])
 				machine_metrics['indents'] += 1
 				machine_metrics['next_states'] = graph['node_graph2'][current_state]['children']
 			}
 			// current state is not a parent but has next states
 			else if(state_keys.includes('next')) {
-				console.log('here')
+				// console.log('here')
 				machine_metrics['next_states'] = graph['node_graph2'][current_state]['next']
 				// console.log(machine_metrics)
 			}
@@ -341,7 +323,7 @@ exports.visitRedux = (node, end_state/*, store*/, graph, indents, optional_param
 			}
 		}
 		else {
-			console.log('submachine fails')
+			// console.log('submachine fails')
 			// submachine fails
 			// if this was recursive this case would return to the children check case above
 			// frogot the loop for when machine_metrics['parent'].ith_parent >= children.length
@@ -359,7 +341,7 @@ exports.visitRedux = (node, end_state/*, store*/, graph, indents, optional_param
 				no case 2 in here
 
 			*/
-			console.log({machine_metrics})
+			// console.log({machine_metrics})
 			// dead path of length 2 before the right path works
 			if(machine_metrics['parent'].grand_parent === null) {
 
@@ -381,7 +363,7 @@ exports.visitRedux = (node, end_state/*, store*/, graph, indents, optional_param
 					// testing this means the machine will have to fail
 					machine_metrics['next_states'] = []
 				}
-				console.log({machine_metrics})
+				// console.log({machine_metrics})
 
 			}
 			else {
@@ -405,7 +387,7 @@ exports.visitRedux = (node, end_state/*, store*/, graph, indents, optional_param
 
 					let ith_parent = machine_metrics['parent'].ith_parent
 					let current_parent = machine_metrics['parent'].current_parent
-					console.log({machine_metrics, current_parent})
+					// console.log({machine_metrics, current_parent})
 
 					let children = graph['node_graph2'][current_parent]['children']
 					// secondary loop exit

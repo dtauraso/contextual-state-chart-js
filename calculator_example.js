@@ -7,6 +7,34 @@ var cf = require('./common_functions')
 //import * as cf from './common_functions.js'
 
 
+var parseChar = (store, var_store, node) => {
+
+	//console.log('in parseChar', node)
+	let state_name = node
+	let i = var_store['i']
+	let input = var_store['input']
+	//console.log(i, input.length)
+
+	//console.log('here is var store', var_store)
+	//console.log('parseChar', node, i)
+	if (i < input.length)
+	{
+		//console.log(var_store)
+		// console.log(state_name, var_store['parsing_checks'])
+		if (var_store['parsing_checks'][state_name](store, var_store))
+		{
+			var_store['i'] += 1
+			//var_store['validate_vars']['k'] += 1
+			//var_store['validate_vars']['input_i'] += 1
+			//var_store['operation_vars']['chain_length'] += 1
+			return true
+
+		}
+
+	}
+
+	return false
+}
 
 var getA = (store, var_store, node) => {
 	// all chains start with this function
@@ -106,7 +134,7 @@ var ignoreOp = (store, var_store, node) => {
 	{
 		return false
 	}
-	if (operators.includes(input[i]) && (input[i] != operators[j]))
+	if (operators.includes(input[i]) && (input[i] !== operators[j]))
 	{
 		var_store['operation_vars']['a'] = 0
 		return true
@@ -338,10 +366,10 @@ var validate = (store, var_store, node) => {
 
 var parsing_checks = {
 
-	'op 0': isOp,
-	'value_ignore 0': cf.isDigit,
-	'op_ignore 0': ignoreOp,
-	'  0': isWhiteSpace,
+	'op': isOp,
+	'value_ignore': cf.isDigit,
+	'op_ignore': ignoreOp,
+	' ': isWhiteSpace,
 
 }
 /*
@@ -351,7 +379,7 @@ cases 1, 2, 3 have 2 parts
 	first part is for paths of length 2
 	secon part is for paths of length > 2
 1) the ith child was wrong and there is an (i+j)th correct child where j >= 1 (we can continue)(passes)
-2) the ith child was wrong and it's the last child in list (we may be able to continue)(passes)
+2) the ith child was wrong and it's the last child in list (we may be able to continue)(passes but going to test another level)
 3) the ith child is wrong and it's not possible to find any other children to try from the parent linked list
 	case 2 but for depth(we cannot continue)
 
@@ -368,6 +396,8 @@ the length is referring to the distance from and including the currently tested 
 it's not measuring the length of the parent linked list
 
 case 3 is more like case 2.2
+
+case a -> case b means case a is addressed first and is transformed into case b
 */
 
 var vars = {
@@ -402,32 +432,34 @@ var vars = {
 			'split 0': {
 				'name'		: 	'split 0',
 				'function'	: 	returnTrue,
-				'next'		: 	['validate 0', 'invalid 0'],
-				'children'	: 	[	'partOfDeathPath 0'/* case 1 length 2 */,
-									'partOfDeathPath 1'/* case 1 length > 2 */,
-									'deadPathCanContinue root' /* case 2 length > 2 */,
-									'char 0',
-									'deadPath0' /* case 2 length 2 -> case 3 length 2 */]
+				'next'		: 	['validate', 'invalid'],
+				'children'	: 	[
+									// 'partOfDeathPath 0'/* case 1 length 2 */,
+									// 'partOfDeathPath 1'/* case 1 length > 2 */,
+									// 'deadPathCanContinue root' /* case 2 length > 2 */,
+									'char',
+									// 'deadPath0' /* case 2 length 2 -> case 3 length 2 */
+								]
 				// make a dead branch here 2 children levels minimum
 			},
 
 			/* case 1 length 2 */
 			'partOfDeathPath 0': {
-				'parents'	: 	['split 0'],
+				'parents'	: 	['split'],
 				'name'		: 	'partOfDeathPath 0',
 				'function'	: 	returnFalse,
 				'next'		: 	['deadEndState 0']
 			},
 
 			'deadEndState 0': {
-				'parents'	: 	['split 0'],
+				'parents'	: 	['split'],
 				'name'		: 	'deadEndState 0',
 				'function'	: 	returnFalse,
 			},
 
 			/* case 1 length > 2 */
 			'partOfDeathPath 1': {
-				'parents'	: 	['split 0'],
+				'parents'	: 	['split'],
 				'name'		: 	'partOfDeathPath 1',
 				'function'	: 	returnTrue,
 				'next'		: 	['deadEndState 1'],
@@ -435,17 +467,17 @@ var vars = {
 			},
 
 			'deadEndState 1': {
-				'parents'	: 	['split 0'],
+				'parents'	: 	['split'],
 				'name'		: 	'deadEndState 1',
 				'function'	: 	returnFalse,
 			},
 
 			/* case 2 length > 2  we can continue the machine */
 			'deadPathCanContinue root': {
-				'parents'	: 	['split 0'],
+				'parents'	: 	['split'],
 				'name'		: 	'deadPathCanContinue root',
 				'function'	: 	returnTrue,
-				'children'	: 	['deadPath0 1', 'deadPath2 0']
+				'children'	: 	['deadPath0 1', 'deadPath2 0'] // maybe make another level
 			},
 
 			'deadPath0 1': {
@@ -469,13 +501,13 @@ var vars = {
 			/* case 2 length 2 -> case 3 length 2 */
 			// can be used to fail the machine
 			'deadPath0': {
-				'parents'	: 	['split 0'],
+				'parents'	: 	['split'],
 				'name'		: 	'deadPath0',
 				'function'	: 	returnTrue,
 				'next'		: 	['deadPath1']
 			},
 			'deadPath1': {
-				'parents'	: 	['split 0'],
+				'parents'	: 	['split'],
 				'name'		: 	'deadPath1',
 				'function'	: 	returnFalse,
 			},
@@ -488,38 +520,33 @@ var vars = {
 				'function'	: 	returnFalse
 			},
 
-			'validate 0': {
+			'validate': {
 				'parents'	: 	[],
-				'name'		: 	'validate 0',
+				'name'		: 	'validate',
 				'function'	: 	validate,
-				'next'		: 	['evaluate_expression 0']
+				'next'		: 	['evaluate_expression']
 			},
-			
-			'evaluate_expression 0': {
+			'invalid': {
 				'parents'	: 	[],
-				'name'		: 	'evaluate_expression 0',
+				'name'		: 	'invalid',
+				'function'	: 	inputIsInvalid
+			},
+			'evaluate_expression': {
+				'parents'	: 	[],
+				'name'		: 	'evaluate_expression',
 				'function'	: 	returnTrue,
-				'next'		: 	['input_has_1_value 0','evaluate_expression 0'],
-				'children'	: 	['a 0']
+				'next'		: 	['input_has_1_value','evaluate_expression'],
+				'children'	: 	['a']
 			},
 
-			'reset_for_next_round_of_input 0': {
-				'parents'	: 	[],
-				'name'		: 	'reset_for_next_round_of_input 0',
-				'function'	: 	resetForNextRound,
-				'next'		: 	['end_of_evaluating 0']
-			},
+			
 
-			'end_of_evaluating 0': {
-				'parents'	: 	[],
-				'name'		: 	'end_of_evaluating 0',
-				'function'	: 	returnTrue
-			},
+			
 
 			// make death paths starting here to force entire machine to fail
-			'input_has_1_value 0': {
+			'input_has_1_value': {
 				'parents'	: 	[],
-				'name'		: 	'input_has_1_value 0',
+				'name'		: 	'input_has_1_value',
 				'function'	: 	showAndExit,
 
 				// 'next'		: 	['finalPath']   // machine will fail if these are run
@@ -533,101 +560,125 @@ var vars = {
 					a terminal branch 0
 			*/
 			/* case 2 length > 2 -> case 3 length > 2 */
+			'finalPath': {
 
+			},
+
+			'a branch level 3': {
+
+			},
+			'terminal state 1': {
+
+			},
+			'terminal state 2': {
+
+			},
+
+
+			'a terminal branch 0': {
+
+			},
 				// split
 				
-				'char 0': {
+				'char': {
 					'parents'	: 	['split 0'],
-					'name'		: 	'char 0',
+					'name'		: 	'char',
 					'function'	: 	collectChar,
-					'next'		: 	['last_to_save 0', 'char 0', 'save 0']
+					'next'		: 	['last_to_save', 'char', 'save']
 				},
 
 
 
-				'save 0': {
+				'save': {
 					'parents'	: 	['split 0'],
-					'name'		: 	'save 0',
+					'name'		: 	'save',
 					'function'	: 	save,
-					'next'		: 	['  0']
+					'next'		: 	[' ']
 				},
 
-				'  0': {
+				' ': {
 					'parents'	: 	['split 0'],
-					'name'		: 	'  0',
-					'function'	: 	cf.parseChar,
-					'next'		: 	['  0', 'init 0']
+					'name'		: 	' ',
+					'function'	: 	parseChar,
+					'next'		: 	[' ', 'init']
 				},
 
-				'init 0': {
+				'init': {
 					'parents'	: 	['split 0'],
-					'name'		: 	'init 0',
+					'name'		: 	'init',
 					'function'	: 	init,
-					'next'		: 	['char 0']
+					'next'		: 	['char']
 				},
 
-				'last_to_save 0': {
+				'last_to_save': {
 					'parents'	: 	['split 0'],
-					'name'		: 	'last_to_save 0',
+					'name'		: 	'last_to_save',
 					'function'	: 	lastToSave
 				},
 
 
 				// evaluate_expression
 
-				'a 0': {
-					'parents'	: 	['evaluate_expression 0'],
-					'name'		: 	'a 0',
+				'a': {
+					'parents'	: 	['evaluate_expression'],
+					'name'		: 	'a',
 					'function'	: 	getA,
-					'next'		: 	['reset_for_next_round_of_input 0', 'op 0', 'op_ignore 0']
+					'next'		: 	['reset_for_next_round_of_input', 'op', 'op_ignore']
 				},
 
-				'op 0': {
-					'parents'	: 	['evaluate_expression 0'],
-					'name'		: 	'op 0',
-					'function'	: 	cf.parseChar,
-					'next'		: 	['error 0', 'b evaluate']
+				'op': {
+					'parents'	: 	['evaluate_expression'],
+					'name'		: 	'op',
+					'function'	: 	parseChar,
+					'next'		: 	['error', 'b evaluate']
 				},
-
+				// add new step to save b?
+				// make a result variable to show the result?
 				'b evaluate': {
-					'parents'	: 	['evaluate_expression 0'],
+					'parents'	: 	['evaluate_expression'],
 					'name'		: 	'b evaluate',
 					'function'	: 	evaluate,
-					'next'		: 	['reset_for_next_round_of_input 0', 'a 0', 'op_ignore 0']
+					'next'		: 	['reset_for_next_round_of_input', 'a', 'op_ignore']
 				},
 
-				'op_ignore 0': {
-					'parents'	: 	['evaluate_expression 0'],
-					'name'		: 	'op_ignore 0',
-					'function'	: 	cf.parseChar,
-					'next'		: 	['error 0', 'value_ignore 0']
+				'op_ignore': {
+					'parents'	: 	['evaluate_expression'],
+					'name'		: 	'op_ignore',
+					'function'	: 	parseChar,
+					'next'		: 	['error', 'value_ignore']
 				},
 
-				'value_ignore 0': {
-					'parents'	: 	['evaluate_expression 0'],
-					'name'		: 	'value_ignore 0',
-					'function'	: 	cf.parseChar,
-					'next'		: 	['reset_for_next_round_of_input 0', 'op_ignore 0', 'value_ignore valid_op']
+				'value_ignore': {
+					'parents'	: 	['evaluate_expression'],
+					'name'		: 	'value_ignore',
+					'function'	: 	parseChar,
+					'next'		: 	['reset_for_next_round_of_input', 'op_ignore', 'value_ignore valid_op']
 				},
 
 				'value_ignore valid_op': {
-					'parents'	: 	['evaluate_expression 0'],
+					'parents'	: 	['evaluate_expression'],
 					'name'		: 	'value_ignore valid_op',
 					'function'	: 	validOp,
-					'next'		: 	['op 0']
+					'next'		: 	['op']
 				},
 
-				'error 0': {
-					'parents'	: 	['evaluate_expression 0'],
-					'name'		: 	'error 0',
+				'error': {
+					'parents'	: 	['evaluate_expression'],
+					'name'		: 	'error',
 					'function'	: 	noMoreInput
 				},
 
-				'invalid 0': {
-					'parents'	: 	['evaluate_expression 0'],
-					'name'		: 	'invalid 0',
-					'function'	: 	inputIsInvalid
-				}
+				'reset_for_next_round_of_input': {
+					'parents'	: 	[],
+					'name'		: 	'reset_for_next_round_of_input',
+					'function'	: 	resetForNextRound,
+					'next'		: 	['end_of_evaluating']
+				},
+				'end_of_evaluating': {
+					'parents'	: 	[],
+					'name'		: 	'end_of_evaluating',
+					'function'	: 	returnTrue
+				},
 		},
 
 	'parsing_checks' : parsing_checks
@@ -645,6 +696,6 @@ var nodeReducer4 = (state = {vars}, action) => {
 // ['split', '0'], ['input_has_1_value', '0'] define a the start point and end point
 // through the state chart
 // ['input_has_1_value', '0']
-hcssm.visitRedux('split 0', 'input_has_1_value 0'/*, calculator_reducer*/, vars, 0)
+hcssm.visitRedux('split 0', 'input_has_1_value 0'/*, calculator_reducer*/, vars, 1)
 
 console.log('done w machine')
