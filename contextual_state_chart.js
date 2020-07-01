@@ -60,7 +60,7 @@ exports.visitNode = (graph, next_state, state_metrics) => {
 	state_metrics['winning_state_name'] = next_state
 	return state_metrics
 }
-exports.goDown1Level = (graph, machine_metrics) => {
+exports.goDown1Level = (graph, machine_metrics, state_metrics) => {
 
 	let current_state = state_metrics['winning_state_name']
 	let current_state_object = graph['node_graph2'][current_state]
@@ -71,16 +71,12 @@ exports.goDown1Level = (graph, machine_metrics) => {
 	return machine_metrics
 }
 exports.moveUpParentAndDockIndents = (graph, machine_metrics) => {
-	// doesn't work
-	// only moves it up when there are no next states
-	// what about the current parent being done by definition?
 
-	// how do we know when the parent is supposed to move on or not?
 	let parent = machine_metrics['parent']
 	// console.log('traveling up parent', machine_metrics)
 	while(parent !== null) {
 		machine_metrics['indents'] -= 1
-		// problem here
+
 		// console.log({parent, state: graph['node_graph2'][parent.current_parent]})
 		if(graph['node_graph2'][parent.current_parent]['next'].length > 0) {
 
@@ -92,8 +88,9 @@ exports.moveUpParentAndDockIndents = (graph, machine_metrics) => {
 		}
 		else {
 			// we are at a parent end state
-
+			let temp = parent
 			parent = parent.grand_parent
+			delete temp
 		}
 	}
 	// guaranteed to have traversed up all end states at end of machine
@@ -132,8 +129,10 @@ exports.backtrack = (graph, machine_metrics) => {
 
 		}
 
+		let temp = machine_metrics['parent']
 		// case 2.1 can turn into case 2.2 if loop condition breaks
 		machine_metrics['parent'] = machine_metrics['parent'].grand_parent
+		delete temp
 		machine_metrics['indents'] -= 1
 		count += 1
 	}
@@ -201,7 +200,7 @@ exports.visitRedux = (start_state, graph, indents) => {
 			// current state is a parent
 			if(state_keys.includes('children')) {
 
-				machine_metrics = exports.goDown1Level(graph, machine_metrics)
+				machine_metrics = exports.goDown1Level(graph, machine_metrics, state_metrics)
 			}
 			// current state is not a parent but has next states
 			else if(state_keys.includes('next')) {

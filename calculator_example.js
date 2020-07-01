@@ -436,97 +436,9 @@ var vars = {
 				'name'		: 	'split 0',
 				'function'	: 	returnTrue,
 				'next'		: 	['validate', 'invalid'],
-				'children'	: 	[
-									'partOfDeathPath 0'/* case 1 length 2 */,
-									'partOfDeathPath 1'/* case 1 length > 2 */,
-									'deadPathCanContinue root' /* case 2 length > 2 -> case 3 length > 2 */,
-									'char',
-									// 'deadPath0' /* case 2 length 2 -> case 3 length 2 */
-								]
-				// make a dead branch here 2 children levels minimum
+				'children'	: 	['char']
 			},
 
-			/* case 1 length 2 */
-			'partOfDeathPath 0': {
-				'parents'	: 	['split'],
-				'name'		: 	'partOfDeathPath 0',
-				'function'	: 	returnFalse,
-				'next'		: 	['deadEndState 0']
-			},
-
-			'deadEndState 0': {
-				'parents'	: 	['split'],
-				'name'		: 	'deadEndState 0',
-				'function'	: 	returnFalse,
-			},
-
-			/* case 1 length > 2 */
-			'partOfDeathPath 1': {
-				'parents'	: 	['split'],
-				'name'		: 	'partOfDeathPath 1',
-				'function'	: 	returnTrue,
-				'next'		: 	['deadEndState 1'],
-				'children'	: 	['deadIntermediateState 0']
-			},
-
-			'deadEndState 1': {
-				'parents'	: 	['split'],
-				'name'		: 	'deadEndState 1',
-				'function'	: 	returnFalse,
-			},
-
-			/* case 2 length > 2  we can continue the machine */
-			'deadPathCanContinue root': {
-				'parents'	: 	['split'],
-				'name'		: 	'deadPathCanContinue root',
-				'function'	: 	returnTrue,
-				'children'	: 	['extra level']
-			},
-			'extra level' : {
-				'parents' 	: 	['deadPathCanContinue root'],
-				'name'		:	'extra level',
-				'function'	: 	returnTrue,
-				'children'	: 	['deadPath0 1', 'deadPath2 0']
-			},
-			'deadPath0 1': {
-				'parents'	: 	['extra level'],
-				'name'		: 	'deadPath0 1',
-				'function'	: 	returnTrue,
-				'next'		: 	['deadPath1 1']
-			},
-			'deadPath1 1': {
-				'parents'	: 	['extra level'],
-				'name'		: 	'deadPath1 1',
-				'function'	: 	returnFalse,
-			},
-			'deadPath2 0': {
-				'parents'	: 	['extra level'],
-				'name'		: 	'deadPath2 0',
-				'function'	: 	returnFalse,
-			},
-			
-
-			/* case 2 length 2 -> case 3 length 2 */
-			// can be used to fail the machine
-			'deadPath0': {
-				'parents'	: 	['split'],
-				'name'		: 	'deadPath0',
-				'function'	: 	returnTrue,
-				'next'		: 	['deadPath1']
-			},
-			'deadPath1': {
-				'parents'	: 	['split'],
-				'name'		: 	'deadPath1',
-				'function'	: 	returnFalse,
-			},
-
-
-
-			'deadIntermediateState 0': {
-				'parents'	: 	['partOfDeathPath 1'],
-				'name'		: 	'deadIntermediateState 0',
-				'function'	: 	returnFalse
-			},
 
 			'validate': {
 				'parents'	: 	[],
@@ -543,16 +455,10 @@ var vars = {
 				'parents'	: 	[],
 				'name'		: 	'evaluate_expression',
 				'function'	: 	returnTrue,
-				// 'next'		: 	['finalPath level 1'], // test for case 2 length > 2 -> case 3 length > 2
 				'next'		: 	['input_has_1_value','evaluate_expression'],
 				'children'	: 	['a']
 			},
-			
 
-			
-			// put a fake state between evaluate_expression -> input_has_1_value
-			// to force machine to exit early without getting the answer
-			// make death paths starting here to force entire machine to fail
 			'input_has_1_value': {
 				'parents'	: 	[],
 				'name'		: 	'input_has_1_value',
@@ -560,64 +466,6 @@ var vars = {
 
 			},
 
-			/*
-				finalPath  level 2
-					a branch level 3
-						terminate state 1
-						terminate state 2
-					a terminal branch 0
-			*/
-			/* case 2 length > 2 -> case 3 length > 2 */
-			'finalPath level 1': {
-				// true
-				'parents'	: 	[],
-				'name'		: 	'finalPath level 1',
-				'function'	: 	returnTrue,
-				'next'		: 	['input_has_1_value','evaluate_expression'],
-				'children'	: ['a branch level 3', 'a terminal branch 0']
-			},
-
-			'a branch level 3': {
-				// true
-				'parents'	: 	[],
-				'name'		: 	'a branch level 3',
-				'function'	: 	returnTrue,
-				'children'	: 	['terminal state 1', 'terminal state 2']
-			},
-			'terminal state 1': {
-				// reurn false
-				'parents'	: 	[],
-				'name'		: 	'terminal state 1',
-				'function'	: 	returnFalse
-			},
-			'terminal state 2': {
-				// return false
-				'parents'	: 	[],
-				'name'		: 	'terminal state 2',
-				'function'	: 	returnTrue,
-				'children'	: 	['final terminal state 1', 'final terminal state 2']
-			},
-			
-			'final terminal state 1': {
-				'parents'	: 	[],
-				'name'		: 	'final terminal state 1',
-				'function'	: 	returnFalse,
-
-			},
-			'final terminal state 2': {
-				'parents'	: 	[],
-				'name'		: 	'final terminal state 2',
-				'function'	: 	returnFalse,
-
-			},
-
-
-			'a terminal branch 0': {
-				// return false
-				'parents'	: 	[],
-				'name'		: 	'a terminal branch 0',
-				'function'	: 	returnFalse
-			},
 				// split
 				
 				'char': {
