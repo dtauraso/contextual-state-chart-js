@@ -175,6 +175,50 @@ exports.moveUpParentAndDockIndents = (graph, machine_metrics) => {
 	machine_metrics['next_states'] = []
 	return machine_metrics
 }
+exports.backtrack = (graph, machine_metrics) => {
+
+	console.log(`${exports.getIndents(machine_metrics['indents'])} failed states L > 2 ${machine_metrics['next_states']}`)
+
+	let count = 0
+	// the second to the nth round of the loop is case 2
+	while(machine_metrics['parent'] !== null) {
+
+		machine_metrics['parent'].ith_parent += 1
+
+		let ith_parent = machine_metrics['parent'].ith_parent
+		let current_parent = machine_metrics['parent'].current_parent
+
+		let children = graph['node_graph2'][current_parent]['children']
+
+		// secondary loop exit
+		// case 1
+		// we are done if there is at least 1 unrun child
+		if(ith_parent < children.length) {
+
+			machine_metrics['next_states'] = children.slice(ith_parent, children.length)
+
+			return machine_metrics
+		}
+		else {
+			// the first round of children will be failed children
+			console.log(`${exports.getIndents(machine_metrics['indents'])} ${count === 0? 'failed': 'passed'} children ${children.join(', ')}`)
+
+		}
+		// console.log(machine_metrics['parent'])
+		// console.log('here')
+		// case 2.1 can turn into case 2.2 if loop condition breaks
+		machine_metrics['parent'] = machine_metrics['parent'].grand_parent
+		machine_metrics['indents'] -= 1
+		count += 1
+	}
+
+	// case 2.2
+	if(machine_metrics['parent'] === null) {
+		// the current state on the highest parent level failed so we cannot continue
+		machine_metrics['next_states'] = []
+	}
+	return machine_metrics
+}
 /*
 		'1',  '+', '2',  '+',  '3',
 		'+',  '4', '-',  '5',  '+',
@@ -205,11 +249,11 @@ exports.visitRedux = (node, end_state/*, store*/, graph, indents, optional_param
 		the layers may changed based on what the parent is at the ith level(you can have a machine where more than
 			1 child state is also a parent will eventually be in the parent linked list)
 	*/
-	let x = node[0]
-	let y = node[1]
+	// let x = node[0]
+	// let y = node[1]
     // var next_states = [node]
-    var action = {}
-	var bottom = []
+    // var action = {}
+	// var bottom = []
 	// parent3 -> parent2 -> parent1 -> null
 	// when we have a state that is a parent
 		// add it to the head of the list
@@ -288,50 +332,10 @@ exports.visitRedux = (node, end_state/*, store*/, graph, indents, optional_param
 		}
 		else {
 
-			console.log('submachine fails')
+			// console.log('submachine fails')
 			// submachine fails
 			// if this was recursive this case would return to the children check case above
-			
-			console.log({machine_metrics})
-
-			// the second to the nth round of the loop is case 2
-			while(machine_metrics['parent'] !== null) {
-
-				machine_metrics['parent'].ith_parent += 1
-
-				let ith_parent = machine_metrics['parent'].ith_parent
-				let current_parent = machine_metrics['parent'].current_parent
-				// console.log({machine_metrics, current_parent})
-
-				let children = graph['node_graph2'][current_parent]['children']
-				// secondary loop exit
-				// case 1
-				// we are done if there is at least 1 unrun child
-				if(ith_parent < children.length) {
-	
-					machine_metrics['next_states'] = children.slice(ith_parent, children.length)
-					break
-					// return machine_metrics
-				}
-				else {
-					console.log(`${exports.getIndents(machine_metrics['indents'])} failed states L > 2 ${machine_metrics['next_states']}`)
-
-				}
-				// console.log(machine_metrics['parent'])
-				// console.log('here')
-				// case 2.1 can turn into case 2.2 if loop condition breaks
-				machine_metrics['parent'] = machine_metrics['parent'].grand_parent
-				machine_metrics['indents'] -= 1
-			}
-
-			// case 2.2
-			if(machine_metrics['parent'] === null) {
-				// the current state on the highest parent level failed so we cannot continue
-				machine_metrics['next_states'] = []
-			}
-			
-			
-			// return machine_metrics
+			machine_metrics = exports.backtrack(graph, machine_metrics)
 
 		}
         i += 1

@@ -558,7 +558,6 @@ var vars = {
 				'name'		: 	'input_has_1_value',
 				'function'	: 	showAndExit,
 
-				// 'next'		: 	['finalPath level 2']   // machine will fail if these are run
 			},
 
 			/*
