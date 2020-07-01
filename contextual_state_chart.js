@@ -1,64 +1,5 @@
 
-/*
-exports.universalReducer = (state, action, var_store) => {
-	Object.assign(state, {action_succeded: false});
 
-    if(action.type.includes('@@redux/INIT'))
-    {
-        console.log('state', action.type, 'case', action.case_, 'start',  action.type)
-		return state
-    }
-
-
-
-
-    switch(action.type)
-    {
-
-
-		default:
-		{
-
-			Object.assign(state, {action_succeded: true});
-		}
-
-	}
-
-	//console.log(state)
-	if(!action.type.includes('@@redux/INIT'))
-	{
-		//console.log('in reducer', action.type, action.case_, state)
-		// graph['dicts']['functions'][state][case_](graph['store'],
-		//																	[state, case_])
-		//console.log(var_store['node_graph2'])
-		Object.assign(	state,
-						{action_succeded: var_store['node_graph2'][action.type]['functions'][action.case_](state, var_store, [action.type, action.case_])
-					});
-		return state
-		//console.log('not here')
-		//console.log('action', state.action_succeded)
-
-	}
-}*/
-
-exports.doesNextStatesExist = (next_states) => {
-
-	return next_states.length > 0 && next_states[0].length > 0
-}
-
-exports.isParent = (children) => {
-
-	// a parent isn't a child
-	console.log(children)
-	console.log(Object.keys(children).length, children.constructor === Object)
-	return   !((Object.keys(children).length === 0 && children.constructor === Object))
-
-}
-
-exports.hasParent = (graph, state_name) => {
-	//console.log(Object.keys(graph['node_graph2'][state]['parents'][case_]))
-	return graph['node_graph2'][state_name]['parents'].length > 0//Object.keys(graph['parents'][state][case_]).length > 0
-}
 function ListNode (current_parent, ith_parent, grand_parent) {
 
 	this.current_parent = current_parent
@@ -77,40 +18,15 @@ exports.getIndents = (count) => {
 	return indent
 }
 
-/*exports.*/ var printStack = (bottom) => {
-
-	var tracker = bottom[0]
-	var stack = []
-	while (tracker !== null)
-	{
-		stack.unshift(tracker.child)
-		tracker = tracker.parent
-	}
-	for(var i in stack)
-	{
-		console.log(stack[i])
-	}
-}
-
 
 
 // the state printing algorithm
 exports.printLevelsBounds = (ith_state, graph, state_name, indents) => {
 	let our_string = graph['input']
 	if(typeof our_string === 'object') {
-		// console.log('object')
-		// console.log(our_string)
 		our_string = our_string.join(' ')
-		// console.log(our_string)
 
 	}
-	// else {
-	// 	console.log(our_string)
-
-	// }
-	// console.log(`${graph['input']}`)
-	// let our_string = `${graph['input']}`
-	// console.log(our_string.slice(','))
 	console.log(`Round #: ${ith_state} ${exports.getIndents(indents)} | state name = '${state_name}' | level = ${indents} | function = ${graph['node_graph2'][state_name]['function'].name} | a = ${graph['operation_vars']['a']} | expression = ${our_string}\n`)
 }
 
@@ -219,25 +135,7 @@ exports.backtrack = (graph, machine_metrics) => {
 	}
 	return machine_metrics
 }
-/*
-		'1',  '+', '2',  '+',  '3',
-		'+',  '4', '-',  '5',  '+',
-		'6',  '*', '7',  '-',  '8',
-		'-',  '9', '+',  '10', '*',
-		'11', '+', '12'
-
-		['1',  '+', '2',  '+',  '3',
-		'+',  '4', '-',  '5',  '+',
-		'6'], '*', ['7',  '-',  '8',
-		'-',  '9', '+',  '10'], '*', ['11', '+', '12']
-
-
-		[['1',  '+', '2',  '+',  '3',
-		'+',  '4'], '-',  ['5',  '+',
-		'6']], '*', ['7',  '-',  '8',
-		'-',  ['9', '+',  '10']], '*', ['11', '+', '12']
-		*/
-exports.visitRedux = (node, end_state/*, store*/, graph, indents, optional_parameter) => {
+exports.visitRedux = (start_state, graph, indents) => {
 	// does depth first tranversal for each subgraph(each subgraph is a state name that has children)
 	// does breath first traversal for within each subgraph
 
@@ -249,27 +147,16 @@ exports.visitRedux = (node, end_state/*, store*/, graph, indents, optional_param
 		the layers may changed based on what the parent is at the ith level(you can have a machine where more than
 			1 child state is also a parent will eventually be in the parent linked list)
 	*/
-	// let x = node[0]
-	// let y = node[1]
-    // var next_states = [node]
-    // var action = {}
-	// var bottom = []
 	// parent3 -> parent2 -> parent1 -> null
 	// when we have a state that is a parent
 		// add it to the head of the list
 	// when machine is over
 		// delete nodes from head till we find one with next states length > 0
 	// assumes state_name actually runs
-	// let parent = null//new ChildParent('root 0', null)
-	// bottom.push(parent)
 	var i = 0
-	// to target a start point and end point
 	// start from the state state
-	// assume the end state is actually and end state
-	//console.log(getIndents(indents), 'start state', node)
-	// make a single js object holding all the variables and pass it into the functions
 	let machine_metrics = {
-		next_states: [node],
+		next_states: [start_state],
 		parent: null,
 		indents: indents
 	}

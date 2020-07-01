@@ -736,6 +736,6 @@ var nodeReducer4 = (state = {vars}, action) => {
 // ['split', '0'], ['input_has_1_value', '0'] define a the start point and end point
 // through the state chart
 // ['input_has_1_value', '0']
-hcssm.visitRedux('split 0', 'input_has_1_value 0'/*, calculator_reducer*/, vars, 1)
+hcssm.visitRedux('split 0', vars, 1)
 
 console.log('done w machine')
