@@ -20,7 +20,7 @@ exports.getIndents = (count) => {
 
 
 
-// the state printing algorithm
+
 exports.printLevelsBounds = (ith_state, graph, state_name, indents) => {
 	let our_string = graph['input']
 	if(typeof our_string === 'object') {
@@ -59,6 +59,15 @@ exports.visitNode = (graph, next_state, state_metrics) => {
 	state_metrics['passes'] = true
 	state_metrics['winning_state_name'] = next_state
 	return state_metrics
+}
+exports.goDown1Level = (graph,
+						machine_metrics,
+						current_state_object,
+						current_state) => {
+	machine_metrics['parent'] = new ListNode(current_state_object.name, 0, machine_metrics['parent'])
+	machine_metrics['indents'] += 1
+	machine_metrics['next_states'] = graph['node_graph2'][current_state]['children']
+	return machine_metrics
 }
 exports.moveUpParentAndDockIndents = (graph, machine_metrics) => {
 	// doesn't work
@@ -191,9 +200,10 @@ exports.visitRedux = (start_state, graph, indents) => {
 			// current state is a parent
 			if(state_keys.includes('children')) {
 
-				machine_metrics['parent'] = new ListNode(current_state_object.name, 0, machine_metrics['parent'])
-				machine_metrics['indents'] += 1
-				machine_metrics['next_states'] = graph['node_graph2'][current_state]['children']
+				machine_metrics = exports.goDown1Level(	graph,
+														machine_metrics,
+														current_state_object,
+														current_state)
 			}
 			// current state is not a parent but has next states
 			else if(state_keys.includes('next')) {
