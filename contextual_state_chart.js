@@ -103,6 +103,7 @@ exports.moveUpParentAndDockIndents = (graph, machine_metrics) => {
 }
 exports.backtrack = (graph, machine_metrics) => {
 
+	// go through the parent linked list and look for any remaining unrun children to resume the visitor function on
 	console.log(`${exports.getIndents(machine_metrics['indents'])} failed states L > 2 ${machine_metrics['next_states']}`)
 
 	let count = 0
@@ -130,8 +131,7 @@ exports.backtrack = (graph, machine_metrics) => {
 			console.log(`${exports.getIndents(machine_metrics['indents'])} ${count === 0? 'failed': 'passed'} children ${children.join(', ')}`)
 
 		}
-		// console.log(machine_metrics['parent'])
-		// console.log('here')
+
 		// case 2.1 can turn into case 2.2 if loop condition breaks
 		machine_metrics['parent'] = machine_metrics['parent'].grand_parent
 		machine_metrics['indents'] -= 1
