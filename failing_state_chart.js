@@ -7,370 +7,12 @@ var cf = require('./common_functions')
 //import * as cf from './common_functions.js'
 
 
-var parseChar = (store, var_store, node) => {
-
-	//console.log('in parseChar', node)
-	let state_name = node
-	let i = var_store['i']
-	let input = var_store['input']
-	//console.log(i, input.length)
-
-	//console.log('here is var store', var_store)
-	//console.log('parseChar', node, i)
-	if (i < input.length)
-	{
-		//console.log(var_store)
-		// console.log(state_name, var_store['parsing_checks'])
-		if (var_store['parsing_checks'][state_name](store, var_store))
-		{
-			var_store['i'] += 1
-			//var_store['validate_vars']['k'] += 1
-			//var_store['validate_vars']['input_i'] += 1
-			//var_store['operation_vars']['chain_length'] += 1
-			return true
-
-		}
-
-	}
-
-	return false
-}
-
-var getA = (store, var_store, node) => {
-	// all chains start with this function
-	var_store['operation_vars']['chain_length'] = 0
-
-	//console.log(var_store['operation_vars']['kind_of_number'])
-	let i = var_store['i']
-	let input = var_store['input']
-	var_store['operation_vars']['a'] = input[i]
-	var_store['operation_vars']['chain_length'] += 1
-	var_store['i'] += 1
-	//console.log(var_store)
-
-	return true
-}
-
-var getB = (store, var_store, node) => {
-
-	//console.log(var_store['operation_vars']['kind_of_number'])
-	let i = var_store['i']
-	let input = var_store['input']
-	var_store['operation_vars']['b'] = input[i]
-	var_store['operation_vars']['chain_length'] += 1
-	var_store['i'] += 1
-	//console.log(var_store)
-
-	return true
-}
-
-var isOp = (store, var_store, node) => {
-	// check current operand with jth operand
-	let i = var_store['i']
-	let input = var_store['input']
-	//console.log(input[i])
-	let j = var_store['lex_vars']['j']
-	let operators = var_store['lex_vars']['operators']
-	return input[i] === operators[j]
-
-}
-
-var evaluate = (store, var_store, node) => {
-
-	//console.log(var_store)
-
-	let i = var_store['i']
-	let input = var_store['input']
-	var_store['operation_vars']['b'] = input[i]
-
-
-	let a = Number(var_store['operation_vars']['a'])
-	let b = Number(var_store['operation_vars']['b'])
-
-	let j = var_store['lex_vars']['j']
-	let operators = var_store['lex_vars']['operators']
-	let operations = var_store['lex_vars']['operations']
-
-	var_store['operation_vars']['a'] = operations[operators[j]] (a, b)
-	var_store['operation_vars']['b'] = 0
-	var_store['i'] += 1
-	let str_a = String(var_store['operation_vars']['a'])
-
-
-	let chain_length = var_store['operation_vars']['chain_length']
-
-	let before_the_chain = var_store['input'].slice(0, i - 2)
-
-	let before_the_chain_len = before_the_chain.length
-	let the_chain = str_a
-
-	let after_the_chain = var_store['input'].slice(i + 1, var_store['input'].length)
-
-	var_store['input'] = before_the_chain
-
-	var_store['input'].push(the_chain)
-	for(var k in after_the_chain)
-	{
-		var_store['input'].push(after_the_chain[k])
-	}
-
-	var_store['i'] = before_the_chain_len
-
-	return true
-}
-
-var ignoreOp = (store, var_store, node) => {
-
-	let i = var_store['i']
-	let input = var_store['input']
-	//console.log(input[i])
-	let j = var_store['lex_vars']['j']
-	let operators = var_store['lex_vars']['operators']
-	//console.log(operators[j])
-	//console.log((input[i] === operators[j]))
-	// need to prove input[i] is an operator, but not operators[j]
-	//console.log(input[i], operators.includes(input[i]))
-	if (endOfInput(store, var_store, node))
-	{
-		return false
-	}
-	if (operators.includes(input[i]) && (input[i] !== operators[j]))
-	{
-		var_store['operation_vars']['a'] = 0
-		return true
-	}
-	return false
-}
-
-
-
-var endOfInput = (store, var_store, node) => {
-
-	//console.log(node)
-	//console.log(var_store)
-	let i = var_store['i']
-	let input = var_store['input']
-	//console.log(i, i >= input.length)
-	return i >= input.length
-}
-
-var inputIsInvalid = (store, var_store, node) => {
-	console.log('your input is invalid')
-	return true
-}
-
-var noMoreInput = (store, var_store, node) => {
-
-	//console.log('at noMoreInput')
-	return endOfInput(store, var_store, node)
-
-}
-
-
-var saveDigit = (store, var_store, node) => {
-	let char = cf.getChar(store, var_store)
-
-	return (char >= '0' && char <= '9')
-
-
-}
-
-
-
-
-
-var isWhiteSpace = (store, var_store) => {
-
-	return cf.getChar(store, var_store) === ' '
-}
-
-
-
-var mult = (a, b) => {
-
-	return a * b
-}
-var divide = (a, b) => {
-
-	return a / b
-}
-var plus = (a, b) => {
-	//console.log(a, b)
-	return a + b
-}
-var minus = (a, b) => {
-
-	return a - b
-}
-
-
-
-
-
-
-
 
 var returnTrue = (store, var_store, node) => {
 	return true
 }
 var returnFalse = (store, var_store, node) => {
 	return false
-}
-var resetForNextRound = (store, var_store, node) => {
-
-	let i = var_store['i']
-	let input = var_store['input']
-	if (i >= input.length)
-	{
-		//console.log(node)
-		var_store['lex_vars']['j'] += 1
-		var_store['i'] = 0
-		return true
-	}
-
-	return false
-}
-
-var showAndExit = (store, var_store, node) => {
-
-	let input = var_store['input']
-	if(input.length === 1)
-	{
-		console.log(input[0])
-		return true
-	}
-
-	return false
-
-}
-
-
-
-
-var collectChar = (store, var_store, node) => {
-
-	let i = var_store['i']
-	let input = var_store['input']
-	//console.log(input[i])
-	if (input[i] != ' ')
-	{
-		var_store['collected_string'] += input[i]
-		var_store['i'] += 1
-		return true
-
-	}
-	return false
-}
-var save = (store, var_store, node) => {
-
-	let i = var_store['i']
-	let input = var_store['input']
-	if (input[i] === ' ')
-	{
-		let collected_string = var_store['collected_string']
-		var_store['expression'].push(collected_string)
-		return true
-
-	}
-	return false
-}
-var init = (store, var_store, node) => {
-
-	let i = var_store['i']
-	let input = var_store['input']
-	if (input[i] != ' ')
-	{
-		var_store['collected_string'] = ''
-		return true
-	}
-	return false
-}
-
-var lastToSave = (store, var_store, node) => {
-
-	if (endOfInput(store, var_store, node))
-	{
-		let collected_string = var_store['collected_string']
-		var_store['expression'].push(collected_string)
-		var_store['input'] = var_store['expression']
-		var_store['i'] = 0
-		var_store['expression'] = []
-		var_store['collected_string'] = ''
-		return true
-	}
-	return false
-}
-var validOp = (store, var_store, node) => {
-
-	let i = var_store['i']
-	let input = var_store['input']
-	if (isOp(store, var_store, node))
-	{
-		var_store['operation_vars']['a'] = input[i - 1]
-		return true
-	}
-	return true
-}
-var validate = (store, var_store, node) => {
-
-	// expressions list
-	// len > 3
-	// alternate # and op
-	// make sure the alternate starts and ends with #
-	var i = 1
-	let input = var_store['input']
-	//console.log(input)
-
-	if (input.length >= 3)
-	{
-		if (Number(input[0]) === NaN)
-		{
-
-			return false
-		}
-		while (i < input.length)
-		{
-			// 2, 4, 6
-			if (i % 2 === 1)
-			{
-
-				if (!var_store['lex_vars']['operators'].includes(input[i]))
-				{
-					return false
-				}
-			}
-			// 1, 3, 5
-			else
-			{
-				if (Number(input[i]) === NaN)
-				{
-					return false
-				}
-			}
-
-			i += 1
-		}
-		if (Number(input[input.length - 1]) === NaN)
-		{
-			return false
-		}
-
-		return true
-
-
-
-	}
-	return false
-
-}
-
-var parsing_checks = {
-
-	'op': isOp,
-	'value_ignore': cf.isDigit,
-	'op_ignore': ignoreOp,
-	' ': isWhiteSpace,
-
 }
 /*
 cases for state machine failures
@@ -404,22 +46,6 @@ case a -> case b means case a is addressed first and is transformed into case b
 */
 
 var vars = {
-	'input' : /* passes '1 + 2 + 3 + 4',*//*'1 + 2 + 3 + 4 - 5 + 6 + 7 - 8 - 9 + 10 + 11 + 12',*//*'1+',*//*'1 +2',*/'1 + 2 + 3 + 4 - 5 + 6 * 7 - 8 - 9 + 10 * 11 + 12', // '1 '
-	// 10 - 18 - 8 - 42
-	'expression' : [],
-	'collected_string' : '',
-	'i' : 0,
-
-	'operation_vars' : {
-
-		'a' : 0,
-
-		'b' : 0},
-
-	'lex_vars' : {
-		'operators' : ['*', '/', '-', '+'],
-		'j' : 0,
-		'operations' : {'*': mult, '/': divide, '+': plus, '-': minus}},
 	// this control graph uses string for states and cases
 	'node_graph2' : {
 
@@ -531,13 +157,13 @@ var vars = {
 			'validate': {
 				'parents'	: 	[],
 				'name'		: 	'validate',
-				'function'	: 	validate,
+				'function'	: 	returnTrue,
 				'next'		: 	['evaluate_expression']
 			},
 			'invalid': {
 				'parents'	: 	[],
 				'name'		: 	'invalid',
-				'function'	: 	inputIsInvalid
+				'function'	: 	returnTrue
 			},
 			'evaluate_expression': {
 				'parents'	: 	[],
@@ -556,7 +182,7 @@ var vars = {
 			'input_has_1_value': {
 				'parents'	: 	[],
 				'name'		: 	'input_has_1_value',
-				'function'	: 	showAndExit,
+				'function'	: 	returnTrue,
 
 			},
 
@@ -623,7 +249,7 @@ var vars = {
 				'char': {
 					'parents'	: 	['split 0'],
 					'name'		: 	'char',
-					'function'	: 	collectChar,
+					'function'	: 	returnTrue,
 					'next'		: 	['last_to_save', 'char', 'save']
 				},
 
@@ -632,28 +258,28 @@ var vars = {
 				'save': {
 					'parents'	: 	['split 0'],
 					'name'		: 	'save',
-					'function'	: 	save,
+					'function'	: 	returnTrue,
 					'next'		: 	[' ']
 				},
 
 				' ': {
 					'parents'	: 	['split 0'],
 					'name'		: 	' ',
-					'function'	: 	parseChar,
+					'function'	: 	returnTrue,
 					'next'		: 	[' ', 'init']
 				},
 
 				'init': {
 					'parents'	: 	['split 0'],
 					'name'		: 	'init',
-					'function'	: 	init,
+					'function'	: 	returnTrue,
 					'next'		: 	['char']
 				},
 
 				'last_to_save': {
 					'parents'	: 	['split 0'],
 					'name'		: 	'last_to_save',
-					'function'	: 	lastToSave
+					'function'	: 	returnTrue
 				},
 
 
@@ -662,14 +288,14 @@ var vars = {
 				'a': {
 					'parents'	: 	['evaluate_expression'],
 					'name'		: 	'a',
-					'function'	: 	getA,
+					'function'	: 	returnTrue,
 					'next'		: 	['reset_for_next_round_of_input', 'op', 'op_ignore']
 				},
 
 				'op': {
 					'parents'	: 	['evaluate_expression'],
 					'name'		: 	'op',
-					'function'	: 	parseChar,
+					'function'	: 	returnTrue,
 					'next'		: 	['error', 'b evaluate']
 				},
 				// add new step to save b?
@@ -677,41 +303,41 @@ var vars = {
 				'b evaluate': {
 					'parents'	: 	['evaluate_expression'],
 					'name'		: 	'b evaluate',
-					'function'	: 	evaluate,
+					'function'	: 	returnTrue,
 					'next'		: 	['reset_for_next_round_of_input', 'a', 'op_ignore']
 				},
 
 				'op_ignore': {
 					'parents'	: 	['evaluate_expression'],
 					'name'		: 	'op_ignore',
-					'function'	: 	parseChar,
+					'function'	: 	returnTrue,
 					'next'		: 	['error', 'value_ignore']
 				},
 
 				'value_ignore': {
 					'parents'	: 	['evaluate_expression'],
 					'name'		: 	'value_ignore',
-					'function'	: 	parseChar,
+					'function'	: 	returnTrue,
 					'next'		: 	['reset_for_next_round_of_input', 'op_ignore', 'value_ignore valid_op']
 				},
 
 				'value_ignore valid_op': {
 					'parents'	: 	['evaluate_expression'],
 					'name'		: 	'value_ignore valid_op',
-					'function'	: 	validOp,
+					'function'	: 	returnTrue,
 					'next'		: 	['op']
 				},
 
 				'error': {
 					'parents'	: 	['evaluate_expression'],
 					'name'		: 	'error',
-					'function'	: 	noMoreInput
+					'function'	: 	returnTrue
 				},
 
 				'reset_for_next_round_of_input': {
 					'parents'	: 	[],
 					'name'		: 	'reset_for_next_round_of_input',
-					'function'	: 	resetForNextRound,
+					'function'	: 	returnTrue,
 					'next'		: 	['end_of_evaluating']
 				},
 				'end_of_evaluating': {
@@ -736,6 +362,6 @@ var nodeReducer4 = (state = {vars}, action) => {
 // ['split', '0'], ['input_has_1_value', '0'] define a the start point and end point
 // through the state chart
 // ['input_has_1_value', '0']
-hcssm.visitRedux('split 0', vars, 1)
+// hcssm.visitRedux('split 0', vars, 1)
 
-console.log('done w machine')
+// console.log('done w machine')
