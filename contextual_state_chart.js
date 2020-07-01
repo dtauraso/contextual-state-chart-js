@@ -162,10 +162,7 @@ exports.visitRedux = (start_state, graph, indents) => {
 	}
     while(machine_metrics['next_states'].length > 0)
     {
-    	//console.log(ii)
-		//printStack(bottom)
-		// 94th state run is last one correct
-		// a 0, op_ignore 0
+    	//console.log(i)
         if(i == 210)
         {
 			console.log('we are out of states')
@@ -180,12 +177,10 @@ exports.visitRedux = (start_state, graph, indents) => {
 		// machine will stop running if all have failed(there must be more than 0 states for this to be possible) or error state runs
 		// loop ends after the first state passes
 		machine_metrics['next_states'].forEach(next_state => {
-			// console.log(next_state)
+
 			state_metrics = exports.visitNode(graph, next_state, state_metrics)
 		})
 		// console.log({machine_metrics, state_metrics, graph})
-
-		// never left the split submachine
 		// current state passes
 		if(state_metrics['passes']) {
 			exports.printLevelsBounds(i, graph, state_metrics['winning_state_name'], machine_metrics['indents'])
@@ -195,20 +190,14 @@ exports.visitRedux = (start_state, graph, indents) => {
 			const state_keys = Object.keys(current_state_object)
 			// current state is a parent
 			if(state_keys.includes('children')) {
-				// add current state as head
-				// the state passed and it has chldren
-				// make a brand new parent from nowhere and set metrics to it
-				// test with machine failure
+
 				machine_metrics['parent'] = new ListNode(current_state_object.name, 0, machine_metrics['parent'])
-				// console.log('new parent', machine_metrics['parent'])
 				machine_metrics['indents'] += 1
 				machine_metrics['next_states'] = graph['node_graph2'][current_state]['children']
 			}
 			// current state is not a parent but has next states
 			else if(state_keys.includes('next')) {
-				// console.log('here')
 				machine_metrics['next_states'] = graph['node_graph2'][current_state]['next']
-				// console.log(machine_metrics)
 			}
 			// curent state is not a parent and has no next states (end state)
 			else {
@@ -223,13 +212,7 @@ exports.visitRedux = (start_state, graph, indents) => {
 			// submachine fails
 			// if this was recursive this case would return to the children check case above
 			machine_metrics = exports.backtrack(graph, machine_metrics)
-
 		}
         i += 1
     }
-
-    //console.log(getIndents(indents), '1state machine is finished', '|'+ state + '|', case_)
-	//console.log(getIndents(indents), 'exit visit', node)
-	//console.log(graph)
-
 }
