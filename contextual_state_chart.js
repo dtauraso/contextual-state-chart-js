@@ -194,17 +194,17 @@ exports.visitRedux = (start_state, graph, indents) => {
 		if(state_metrics['passes']) {
 			exports.printLevelsBounds(i, graph, state_metrics['winning_state_name'], machine_metrics['indents'])
 
-			let current_state = state_metrics['winning_state_name']
-			let current_state_object = graph['node_graph2'][current_state]
-			const state_keys = Object.keys(current_state_object)
+			let current_state_name = state_metrics['winning_state_name']
+			let current_state = graph['node_graph2'][current_state_name]
+
 			// current state is a parent
-			if(state_keys.includes('children')) {
+			if(current_state['children']) {
 
 				machine_metrics = exports.goDown1Level(graph, machine_metrics, state_metrics)
 			}
 			// current state is not a parent but has next states
-			else if(state_keys.includes('next')) {
-				machine_metrics['next_states'] = graph['node_graph2'][current_state]['next']
+			else if(current_state['next']) {
+				machine_metrics['next_states'] = graph['node_graph2'][current_state_name]['next']
 			}
 			// curent state is not a parent and has no next states (end state)
 			else {
