@@ -121,26 +121,6 @@ exports.printVarStore = (graph) => {
 
 }
 
-exports.addParent = (graph, machine_metrics, current_state_object) => {
-	// console.log(current_state_object, graph['node_graph2'][current_state_object.name])
-
-	// the machine metrics object isn't being used to add the new parent to the head
-	let parents = graph['node_graph2'][current_state_object.name]['parents']
-	// old parent
-	let parent = machine_metrics['parent']
-	// console.log('old parent', parent)
-	let new_head = null
-	let grand_parent = null
-
-	if(parent !== null && parents.includes(parent.current_parent)) {
-		grand_parent = parent
-	}
-	// adding a new head
-	new_head = new ListNode(current_state_object.name, 0, grand_parent)
-
-	return new_head
-
-}
 exports.visitNode = (graph, next_state, state_metrics) => {
 	
 	if(next_state === undefined) {
@@ -269,6 +249,7 @@ exports.visitRedux = (node, end_state/*, store*/, graph, indents, optional_param
 		// machine will stop running if all have failed(there must be more than 0 states for this to be possible) or error state runs
 		// loop ends after the first state passes
 		machine_metrics['next_states'].forEach(next_state => {
+			// console.log(next_state)
 			state_metrics = exports.visitNode(graph, next_state, state_metrics)
 		})
 		// console.log({machine_metrics, state_metrics, graph})
@@ -287,9 +268,7 @@ exports.visitRedux = (node, end_state/*, store*/, graph, indents, optional_param
 				// the state passed and it has chldren
 				// make a brand new parent from nowhere and set metrics to it
 				// test with machine failure
-				machine_metrics['parent'] = exports.addParent(	graph,
-																machine_metrics,
-																current_state_object)
+				machine_metrics['parent'] = new ListNode(current_state_object.name, 0, machine_metrics['parent'])
 				// console.log('new parent', machine_metrics['parent'])
 				machine_metrics['indents'] += 1
 				machine_metrics['next_states'] = graph['node_graph2'][current_state]['children']
@@ -304,138 +283,56 @@ exports.visitRedux = (node, end_state/*, store*/, graph, indents, optional_param
 			else {
 				// console.log('done with machine')
 				// console.log({machine_metrics})
-				// erase the head
-				// then check to find if the grandparent has next states
-
-				// the state chart is done after all end states have been reached on each level
-				// we are done with machine at the current level
-				// we can actually have an end state with parents, the empby next states will still be found with this
-				
-				// can't kill off parent here as we need it's next states first
-				// get next states, then delete the parent
-				// machine_metrics['indents'] -= 1
-				// machine_metrics['parent'] = machine_metrics['parent'].grand_parent
-				// works
 				machine_metrics = exports.moveUpParentAndDockIndents(graph, machine_metrics)
-				// const current_state = machine_metrics['parent'].current_parent
-				// machine_metrics['next_states'] = graph['node_graph2'][current_state]['next']
-				// console.log(machine_metrics)
 			}
 		}
 		else {
-			// console.log('submachine fails')
+
+			console.log('submachine fails')
 			// submachine fails
 			// if this was recursive this case would return to the children check case above
-			// frogot the loop for when machine_metrics['parent'].ith_parent >= children.length
-			// got up 1 parent as this machine has failed and we have to go to the supermachine
+			
+			console.log({machine_metrics})
 
-			// start our next states at the next state to test as we have already tested [0, ith_parent] states
-			/*
-			length 2:
-				1) before the right path  ith_parent < children.length
-				2) as the only path(s) ith_parent < children.length and ith_parent >= children.length
-				3) make entire machine fail only ith_parent >= children.length where next states
-				are set to []
-			length 2+:
-				same as above but length > 2
-				no case 2 in here
+			// the second to the nth round of the loop is case 2
+			while(machine_metrics['parent'] !== null) {
 
-			*/
-			// console.log({machine_metrics})
-			// dead path of length 2 before the right path works
-			if(machine_metrics['parent'].grand_parent === null) {
-
-				// 2 level dead path
-				// machine_metrics['parent'] = machine_metrics['parent'].grand_parent
-				// machine_metrics['indents'] -= 1
-				// pretend the null parent has more
 				machine_metrics['parent'].ith_parent += 1
+
 				let ith_parent = machine_metrics['parent'].ith_parent
-				let current_state = machine_metrics['parent'].current_parent
-				let children = graph['node_graph2'][current_state]['children']
+				let current_parent = machine_metrics['parent'].current_parent
+				// console.log({machine_metrics, current_parent})
 
-				/* case 1 length 2 */
+				let children = graph['node_graph2'][current_parent]['children']
+				// secondary loop exit
+				// case 1
+				// we are done if there is at least 1 unrun child
 				if(ith_parent < children.length) {
+	
 					machine_metrics['next_states'] = children.slice(ith_parent, children.length)
+					break
+					// return machine_metrics
 				}
-				/* 	case 2 length 2 -> case 3 length 2 */
 				else {
-					// testing this means the machine will have to fail
-					machine_metrics['next_states'] = []
-				}
-				// console.log({machine_metrics})
+					console.log(`${exports.getIndents(machine_metrics['indents'])} failed states L > 2 ${machine_metrics['next_states']}`)
 
+				}
+				// console.log(machine_metrics['parent'])
+				// console.log('here')
+				// case 2.1 can turn into case 2.2 if loop condition breaks
+				machine_metrics['parent'] = machine_metrics['parent'].grand_parent
+				machine_metrics['indents'] -= 1
 			}
-			else {
-				// 2+ level dead path
-				// travel up the parent linked list from the head locatd at machine_metrics['parent']
-				// and find the next unrun child state or stop running the entire machine 
 
-				// the dead path also has to exist as a single branch as well as part of successfull branches
-				// skip over all ith parents that have no more siblings
-				// primary loop guard
-				// process parent if it exists
-				// TODO: test this loop
-				// test this looping minus the inner if(1 lone dead branch)
-				// and including the inner if(a dead branch coming before a successfull branch)
-				// test a few branches just to make sure this works(maybe force it to find 2 dead submachines before
-				// finding the right submachine)
-				// works with 2+ path dead branch coming before the right branch
-				while(machine_metrics['parent'] !== null) {
-
-					machine_metrics['parent'].ith_parent += 1
-
-					let ith_parent = machine_metrics['parent'].ith_parent
-					let current_parent = machine_metrics['parent'].current_parent
-					// console.log({machine_metrics, current_parent})
-
-					let children = graph['node_graph2'][current_parent]['children']
-					// secondary loop exit
-					/* 	case 1 length > 2 */
-					// we are done if there is at least 1 unrun child
-					if(ith_parent < children.length) {
-		
-						machine_metrics['next_states'] = children.slice(ith_parent, children.length)
-						break
-						// return machine_metrics
-					}
-					// console.log('here')
-					// fail
-
-					// case 2 length > 2 -> case 1 length > 2 as we are still inside the loop
-					machine_metrics['parent'] = machine_metrics['parent'].grand_parent
-					machine_metrics['indents'] -= 1
-				}
-
-				// ith_parent < children.length was never true
-				// is this the result we want?
-				// how do I know this was the only parent that turned out to be false?
-				/*
-				counter example becuase we can continue the machine despite having null parents
-				old parents null
-				new parent ListNode {
-				current_parent: 'split 0',
-				ith_parent: 0,
-				grand_parent: null
-				*/
-				// there might be another case here
-				// check if winning state has next states to find out if this is the last state or not?
-					// that state is not findable
-				// have a parent state that doesn't have a next as root?
-				// this will be false if the entire machine doens't fail
-				/* case 2 length > 2 -> case 3 length > 2 as we left the loop in case 2 length > 2 */
-				if(machine_metrics['parent'] === null) {
-					// this will only be true if the entire machine fails
-					// there should not be any more states to visit as the last parent failed
-					machine_metrics['next_states'] = []
-
-				}
+			// case 2.2
+			if(machine_metrics['parent'] === null) {
+				// the current state on the highest parent level failed so we cannot continue
+				machine_metrics['next_states'] = []
 			}
+			
 			
 			// return machine_metrics
 
-			// console.log(next_states, 'have failed so your state machine is incomplete')
-            // fail
 		}
         i += 1
     }

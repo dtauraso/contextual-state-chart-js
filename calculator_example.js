@@ -379,10 +379,13 @@ cases 1, 2, 3 have 2 parts
 	first part is for paths of length 2
 	secon part is for paths of length > 2
 1) the ith child was wrong and there is an (i+j)th correct child where j >= 1 (we can continue)(passes)
-2) the ith child was wrong and it's the last child in list (we may be able to continue)(passes but going to test another level)
-3) the ith child is wrong and it's not possible to find any other children to try from the parent linked list
-	case 2 but for depth(we cannot continue)
-
+2) the ith child was wrong and it's the last child in list(passes)
+	2.1)
+		we can move to at least 1 other node in the parent list
+		we can continue
+	2.2)
+		we can move to 0 other nodes in the parent list
+		we have to stop
 how the cases map to each other
 1 -> 1
 2 -> 1 | 3
@@ -434,9 +437,9 @@ var vars = {
 				'function'	: 	returnTrue,
 				'next'		: 	['validate', 'invalid'],
 				'children'	: 	[
-									// 'partOfDeathPath 0'/* case 1 length 2 */,
-									// 'partOfDeathPath 1'/* case 1 length > 2 */,
-									// 'deadPathCanContinue root' /* case 2 length > 2 */,
+									'partOfDeathPath 0'/* case 1 length 2 */,
+									'partOfDeathPath 1'/* case 1 length > 2 */,
+									'deadPathCanContinue root' /* case 2 length > 2 -> case 3 length > 2 */,
 									'char',
 									// 'deadPath0' /* case 2 length 2 -> case 3 length 2 */
 								]
@@ -477,22 +480,27 @@ var vars = {
 				'parents'	: 	['split'],
 				'name'		: 	'deadPathCanContinue root',
 				'function'	: 	returnTrue,
-				'children'	: 	['deadPath0 1', 'deadPath2 0'] // maybe make another level
+				'children'	: 	['extra level']
 			},
-
+			'extra level' : {
+				'parents' 	: 	['deadPathCanContinue root'],
+				'name'		:	'extra level',
+				'function'	: 	returnTrue,
+				'children'	: 	['deadPath0 1', 'deadPath2 0']
+			},
 			'deadPath0 1': {
-				'parents'	: 	['deadPathCanContinue root'],
+				'parents'	: 	['extra level'],
 				'name'		: 	'deadPath0 1',
 				'function'	: 	returnTrue,
 				'next'		: 	['deadPath1 1']
 			},
 			'deadPath1 1': {
-				'parents'	: 	['deadPathCanContinue root'],
+				'parents'	: 	['extra level'],
 				'name'		: 	'deadPath1 1',
 				'function'	: 	returnFalse,
 			},
 			'deadPath2 0': {
-				'parents'	: 	['deadPathCanContinue root'],
+				'parents'	: 	['extra level'],
 				'name'		: 	'deadPath2 0',
 				'function'	: 	returnFalse,
 			},
@@ -535,21 +543,22 @@ var vars = {
 				'parents'	: 	[],
 				'name'		: 	'evaluate_expression',
 				'function'	: 	returnTrue,
+				// 'next'		: 	['finalPath level 1'], // test for case 2 length > 2 -> case 3 length > 2
 				'next'		: 	['input_has_1_value','evaluate_expression'],
 				'children'	: 	['a']
 			},
-
 			
 
 			
-
+			// put a fake state between evaluate_expression -> input_has_1_value
+			// to force machine to exit early without getting the answer
 			// make death paths starting here to force entire machine to fail
 			'input_has_1_value': {
 				'parents'	: 	[],
 				'name'		: 	'input_has_1_value',
 				'function'	: 	showAndExit,
 
-				// 'next'		: 	['finalPath']   // machine will fail if these are run
+				// 'next'		: 	['finalPath level 2']   // machine will fail if these are run
 			},
 
 			/*
@@ -560,23 +569,55 @@ var vars = {
 					a terminal branch 0
 			*/
 			/* case 2 length > 2 -> case 3 length > 2 */
-			'finalPath': {
-
+			'finalPath level 1': {
+				// true
+				'parents'	: 	[],
+				'name'		: 	'finalPath level 1',
+				'function'	: 	returnTrue,
+				'next'		: 	['input_has_1_value','evaluate_expression'],
+				'children'	: ['a branch level 3', 'a terminal branch 0']
 			},
 
 			'a branch level 3': {
-
+				// true
+				'parents'	: 	[],
+				'name'		: 	'a branch level 3',
+				'function'	: 	returnTrue,
+				'children'	: 	['terminal state 1', 'terminal state 2']
 			},
 			'terminal state 1': {
-
+				// reurn false
+				'parents'	: 	[],
+				'name'		: 	'terminal state 1',
+				'function'	: 	returnFalse
 			},
 			'terminal state 2': {
+				// return false
+				'parents'	: 	[],
+				'name'		: 	'terminal state 2',
+				'function'	: 	returnTrue,
+				'children'	: 	['final terminal state 1', 'final terminal state 2']
+			},
+			
+			'final terminal state 1': {
+				'parents'	: 	[],
+				'name'		: 	'final terminal state 1',
+				'function'	: 	returnFalse,
+
+			},
+			'final terminal state 2': {
+				'parents'	: 	[],
+				'name'		: 	'final terminal state 2',
+				'function'	: 	returnFalse,
 
 			},
 
 
 			'a terminal branch 0': {
-
+				// return false
+				'parents'	: 	[],
+				'name'		: 	'a terminal branch 0',
+				'function'	: 	returnFalse
 			},
 				// split
 				
