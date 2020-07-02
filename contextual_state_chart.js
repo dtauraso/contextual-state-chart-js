@@ -37,7 +37,7 @@ exports.printVarStore = (graph) => {
 
 }
 
-exports.visitNode = (graph, next_state, state_metrics) => {
+exports.visitNode = (graph, next_state, state_metrics, parent_state) => {
 	
 	if(next_state === undefined) {
 		console.log("the js syntax for the next states is wrong")
@@ -52,7 +52,9 @@ exports.visitNode = (graph, next_state, state_metrics) => {
 		console.log(state, "doesn't have a function")
 		return state_metrics
 	}
-	let success = state['function'](next_state, graph, next_state)
+	// update to use a parent state
+	// (current_state, graph, parent_state)
+	let success = state['function'](next_state, graph, parent_state)
 	if(!success) {
 		return state_metrics
 	}
@@ -187,11 +189,15 @@ exports.visitRedux = (start_state, graph, indents) => {
 		// loop ends after the first state passes
 		machine_metrics['next_states'].forEach(next_state => {
 
-			state_metrics = exports.visitNode(graph, next_state, state_metrics)
+			state_metrics = exports.visitNode(	graph,
+												next_state,
+												state_metrics,
+												machine_metrics['parents'])
 		})
 		// console.log({machine_metrics, state_metrics, graph})
 		// current state passes
 		if(state_metrics['passes']) {
+			console.log(machine_metrics['parent'])
 			exports.printLevelsBounds(i, graph, state_metrics['winning_state_name'], machine_metrics['indents'])
 
 			let current_state_name = state_metrics['winning_state_name']

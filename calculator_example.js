@@ -6,137 +6,126 @@ var hcssm = require('./contextual_state_chart')
 var cf = require('./common_functions')
 //import * as cf from './common_functions.js'
 
-
-var parseChar = (store, var_store, node) => {
+// current_state, graph, parent_state
+var parseChar = (current_state, graph, parent_state) => {
 
 	//console.log('in parseChar', node)
-	let state_name = node
-	let i = var_store['i']
-	let input = var_store['input']
-	//console.log(i, input.length)
+	let state_name = current_state
+	let i = graph['i']
+	let input = graph['input']
 
-	//console.log('here is var store', var_store)
-	//console.log('parseChar', node, i)
-	if (i < input.length)
-	{
-		//console.log(var_store)
-		// console.log(state_name, var_store['parsing_checks'])
-		if (var_store['parsing_checks'][state_name](store, var_store))
-		{
-			var_store['i'] += 1
-			//var_store['validate_vars']['k'] += 1
-			//var_store['validate_vars']['input_i'] += 1
-			//var_store['operation_vars']['chain_length'] += 1
-			return true
-
-		}
-
+	if(i >= input.length) {
+		return false
 	}
-
+	if(graph['parsing_checks'][state_name](current_state, graph))
+	{
+		graph['i'] += 1
+		return true
+	}
 	return false
 }
 
-var getA = (store, var_store, node) => {
+var getA = (current_state, graph, nparent_stateode) => {
+
 	// all chains start with this function
-	var_store['operation_vars']['chain_length'] = 0
+	graph['operation_vars']['chain_length'] = 0
 
-	//console.log(var_store['operation_vars']['kind_of_number'])
-	let i = var_store['i']
-	let input = var_store['input']
-	var_store['operation_vars']['a'] = input[i]
-	var_store['operation_vars']['chain_length'] += 1
-	var_store['i'] += 1
-	//console.log(var_store)
 
+	let i = graph['i']
+	let input = graph['input']
+	graph['operation_vars']['a'] = input[i]
+	graph['operation_vars']['chain_length'] += 1
+	graph['i'] += 1
+
+	
 	return true
 }
 
-var getB = (store, var_store, node) => {
+var getB = (current_state, graph, parent_state) => {
 
-	//console.log(var_store['operation_vars']['kind_of_number'])
-	let i = var_store['i']
-	let input = var_store['input']
-	var_store['operation_vars']['b'] = input[i]
-	var_store['operation_vars']['chain_length'] += 1
-	var_store['i'] += 1
-	//console.log(var_store)
 
+	let i = graph['i']
+	let input = graph['input']
+	graph['operation_vars']['b'] = input[i]
+	graph['operation_vars']['chain_length'] += 1
+	graph['i'] += 1
+
+	
 	return true
 }
 
-var isOp = (store, var_store, node) => {
+var isOp = (current_state, graph, parent_state) => {
+
 	// check current operand with jth operand
-	let i = var_store['i']
-	let input = var_store['input']
-	//console.log(input[i])
-	let j = var_store['lex_vars']['j']
-	let operators = var_store['lex_vars']['operators']
+	let i = graph['i']
+	let input = graph['input']
+
+	let j = graph['lex_vars']['j']
+	let operators = graph['lex_vars']['operators']
 	return input[i] === operators[j]
 
 }
 
-var evaluate = (store, var_store, node) => {
-
-	//console.log(var_store)
-
-	let i = var_store['i']
-	let input = var_store['input']
-	var_store['operation_vars']['b'] = input[i]
+var evaluate = (current_state, graph, parent_state) => {
 
 
-	let a = Number(var_store['operation_vars']['a'])
-	let b = Number(var_store['operation_vars']['b'])
-
-	let j = var_store['lex_vars']['j']
-	let operators = var_store['lex_vars']['operators']
-	let operations = var_store['lex_vars']['operations']
-
-	var_store['operation_vars']['a'] = operations[operators[j]] (a, b)
-	var_store['operation_vars']['b'] = 0
-	var_store['i'] += 1
-	let str_a = String(var_store['operation_vars']['a'])
+	let i = graph['i']
+	let input = graph['input']
+	graph['operation_vars']['b'] = input[i]
 
 
-	let chain_length = var_store['operation_vars']['chain_length']
+	let a = Number(graph['operation_vars']['a'])
+	let b = Number(graph['operation_vars']['b'])
 
-	let before_the_chain = var_store['input'].slice(0, i - 2)
+	let j = graph['lex_vars']['j']
+	let operators = graph['lex_vars']['operators']
+	let operations = graph['lex_vars']['operations']
+
+	graph['operation_vars']['a'] = operations[operators[j]] (a, b)
+	graph['operation_vars']['b'] = 0
+	graph['i'] += 1
+	let str_a = String(graph['operation_vars']['a'])
+
+
+	let chain_length = graph['operation_vars']['chain_length']
+
+	let before_the_chain = graph['input'].slice(0, i - 2)
 
 	let before_the_chain_len = before_the_chain.length
 	let the_chain = str_a
 
-	let after_the_chain = var_store['input'].slice(i + 1, var_store['input'].length)
+	let after_the_chain = graph['input'].slice(i + 1, graph['input'].length)
 
-	var_store['input'] = before_the_chain
+	graph['input'] = before_the_chain
 
-	var_store['input'].push(the_chain)
+	graph['input'].push(the_chain)
 	for(var k in after_the_chain)
 	{
-		var_store['input'].push(after_the_chain[k])
+		graph['input'].push(after_the_chain[k])
 	}
 
-	var_store['i'] = before_the_chain_len
+	graph['i'] = before_the_chain_len
 
 	return true
 }
 
-var ignoreOp = (store, var_store, node) => {
+var ignoreOp = (current_state, graph, parent_state) => {
 
-	let i = var_store['i']
-	let input = var_store['input']
-	//console.log(input[i])
-	let j = var_store['lex_vars']['j']
-	let operators = var_store['lex_vars']['operators']
-	//console.log(operators[j])
-	//console.log((input[i] === operators[j]))
+	let i = graph['i']
+	let input = graph['input']
+
+	let j = graph['lex_vars']['j']
+	let operators = graph['lex_vars']['operators']
+
 	// need to prove input[i] is an operator, but not operators[j]
-	//console.log(input[i], operators.includes(input[i]))
-	if (endOfInput(store, var_store, node))
+
+	if(endOfInput(current_state, graph, parent_state))
 	{
 		return false
 	}
-	if (operators.includes(input[i]) && (input[i] !== operators[j]))
+	if(operators.includes(input[i]) && (input[i] !== operators[j]))
 	{
-		var_store['operation_vars']['a'] = 0
+		graph['operation_vars']['a'] = 0
 		return true
 	}
 	return false
@@ -144,44 +133,38 @@ var ignoreOp = (store, var_store, node) => {
 
 
 
-var endOfInput = (store, var_store, node) => {
+var endOfInput = (current_state, graph, parent_state) => {
 
-	//console.log(node)
-	//console.log(var_store)
-	let i = var_store['i']
-	let input = var_store['input']
-	//console.log(i, i >= input.length)
+
+	let i = graph['i']
+	let input = graph['input']
+
 	return i >= input.length
 }
 
-var inputIsInvalid = (store, var_store, node) => {
+var inputIsInvalid = (current_state, graph, parent_state) => {
 	console.log('your input is invalid')
 	return true
 }
 
-var noMoreInput = (store, var_store, node) => {
+var noMoreInput = (current_state, graph, parent_state) => {
 
-	//console.log('at noMoreInput')
-	return endOfInput(store, var_store, node)
+	return endOfInput(current_state, graph, parent_state)
 
 }
 
 
-var saveDigit = (store, var_store, node) => {
-	let char = cf.getChar(store, var_store)
+var saveDigit = (current_state, graph, parent_state) => {
+	let char = cf.getChar(current_state, graph)
 
 	return (char >= '0' && char <= '9')
-
-
 }
 
 
 
+var isWhiteSpace = (current_state, graph) => {
 
-
-var isWhiteSpace = (store, var_store) => {
-
-	return cf.getChar(store, var_store) === ' '
+	return cf.getChar(current_state, graph) === ' '
 }
 
 
@@ -195,7 +178,7 @@ var divide = (a, b) => {
 	return a / b
 }
 var plus = (a, b) => {
-	//console.log(a, b)
+
 	return a + b
 }
 var minus = (a, b) => {
@@ -210,157 +193,140 @@ var minus = (a, b) => {
 
 
 
-var returnTrue = (store, var_store, node) => {
+var returnTrue = (current_state, graph, parent_state) => {
 	return true
 }
-var returnFalse = (store, var_store, node) => {
+var returnFalse = (current_state, graph, parent_state) => {
 	return false
 }
-var resetForNextRound = (store, var_store, node) => {
+var resetForNextRound = (current_state, graph, parent_state) => {
 
-	let i = var_store['i']
-	let input = var_store['input']
-	if (i >= input.length)
-	{
-		//console.log(node)
-		var_store['lex_vars']['j'] += 1
-		var_store['i'] = 0
-		return true
+	let i = graph['i']
+	let input = graph['input']
+	if(i < input.length) {
+		return false
 	}
-
-	return false
-}
-
-var showAndExit = (store, var_store, node) => {
-
-	let input = var_store['input']
-	if(input.length === 1)
-	{
-		console.log(input[0])
-		return true
-	}
-
-	return false
-
-}
-
-
-
-
-var collectChar = (store, var_store, node) => {
-
-	let i = var_store['i']
-	let input = var_store['input']
-	//console.log(input[i])
-	if (input[i] != ' ')
-	{
-		var_store['collected_string'] += input[i]
-		var_store['i'] += 1
-		return true
-
-	}
-	return false
-}
-var save = (store, var_store, node) => {
-
-	let i = var_store['i']
-	let input = var_store['input']
-	if (input[i] === ' ')
-	{
-		let collected_string = var_store['collected_string']
-		var_store['expression'].push(collected_string)
-		return true
-
-	}
-	return false
-}
-var init = (store, var_store, node) => {
-
-	let i = var_store['i']
-	let input = var_store['input']
-	if (input[i] != ' ')
-	{
-		var_store['collected_string'] = ''
-		return true
-	}
-	return false
-}
-
-var lastToSave = (store, var_store, node) => {
-
-	if (endOfInput(store, var_store, node))
-	{
-		let collected_string = var_store['collected_string']
-		var_store['expression'].push(collected_string)
-		var_store['input'] = var_store['expression']
-		var_store['i'] = 0
-		var_store['expression'] = []
-		var_store['collected_string'] = ''
-		return true
-	}
-	return false
-}
-var validOp = (store, var_store, node) => {
-
-	let i = var_store['i']
-	let input = var_store['input']
-	if (isOp(store, var_store, node))
-	{
-		var_store['operation_vars']['a'] = input[i - 1]
-		return true
-	}
+	graph['lex_vars']['j'] += 1
+	graph['i'] = 0
 	return true
 }
-var validate = (store, var_store, node) => {
+
+var showAndExit = (current_state, graph, parent_state) => {
+
+	let input = graph['input']
+	if(input.length > 1) {
+		return false
+	}
+	console.log(input[0])
+	return true
+
+}
+
+
+
+
+var collectChar = (current_state, graph, parent_state) => {
+
+	let i = graph['i']
+	let input = graph['input']
+
+	if(input[i] === ' ') {
+		return false
+	}
+	graph['collected_string'] += input[i]
+	graph['i'] += 1
+	return true
+}
+var save = (current_state, graph, parent_state) => {
+
+	let i = graph['i']
+	let input = graph['input']
+	if(input[i] !== ' ') {
+		return false
+	}
+	let collected_string = graph['collected_string']
+	graph['expression'].push(collected_string)
+	return true
+}
+var init = (current_state, graph, parent_state) => {
+
+	let i = graph['i']
+	let input = graph['input']
+	if(input[i] === ' ') {
+		return false
+	}
+	graph['collected_string'] = ''
+	return true
+}
+
+var lastToSave = (current_state, graph, parent_state) => {
+
+	if(!endOfInput(current_state, graph, parent_state)) {
+		return false
+	}
+	let collected_string = graph['collected_string']
+	graph['expression'].push(collected_string)
+	graph['input'] = graph['expression']
+	graph['i'] = 0
+	graph['expression'] = []
+	graph['collected_string'] = ''
+	return true
+}
+var validOp = (current_state, graph, parent_state) => {
+
+	let i = graph['i']
+	let input = graph['input']
+	if(!isOp(current_state, graph, parent_state)) {
+		return false
+	}
+	graph['operation_vars']['a'] = input[i - 1]
+	return true
+}
+var validate = (current_state, graph, parent_state) => {
 
 	// expressions list
 	// len > 3
 	// alternate # and op
 	// make sure the alternate starts and ends with #
 	var i = 1
-	let input = var_store['input']
+	let input = graph['input']
 	//console.log(input)
-
-	if (input.length >= 3)
-	{
-		if (Number(input[0]) === NaN)
-		{
-
-			return false
-		}
-		while (i < input.length)
-		{
-			// 2, 4, 6
-			if (i % 2 === 1)
-			{
-
-				if (!var_store['lex_vars']['operators'].includes(input[i]))
-				{
-					return false
-				}
-			}
-			// 1, 3, 5
-			else
-			{
-				if (Number(input[i]) === NaN)
-				{
-					return false
-				}
-			}
-
-			i += 1
-		}
-		if (Number(input[input.length - 1]) === NaN)
-		{
-			return false
-		}
-
-		return true
-
-
-
+	if(input.length < 3) {
+		return false
 	}
-	return false
+	if(Number(input[0]) === NaN) {
+
+		return false
+	}
+	while(i < input.length) {
+		// check for the existence of an operator
+		// 2, 4, 6
+		if(i % 2 === 1)
+		{
+
+			if(!(input[i] in graph['lex_vars']['operations']))
+			{
+				return false
+			}
+		}
+		// check for the existence of an integer
+		// 1, 3, 5
+		else
+		{
+			if(Number(input[i]) === NaN)
+			{
+				return false
+			}
+		}
+
+		i += 1
+	}
+	if(Number(input[input.length - 1]) === NaN)
+	{
+		return false
+	}
+
+	return true
 
 }
 
@@ -403,6 +369,10 @@ case 3 is more like case 2.2
 case a -> case b means case a is addressed first and is transformed into case b
 */
 
+/*
+input -> expresion 
+expression -> 
+*/
 var vars = {
 	'input' : /* passes '1 + 2 + 3 + 4',*//*'1 + 2 + 3 + 4 - 5 + 6 + 7 - 8 - 9 + 10 + 11 + 12',*//*'1+',*//*'1 +2',*/'1 + 2 + 3 + 4 - 5 + 6 * 7 - 8 - 9 + 10 * 11 + 12', // '1 '
 	// 10 - 18 - 8 - 42
@@ -430,14 +400,37 @@ var vars = {
 			function
 			next
 			children
+			variableNames
+			value
 			*/
+			'root': {
+				'name'			: 	'root',
+				'function'		: 	returnTrue,
+				'children'		: 	['split'],
+				'variableNames'	: 	['input', 'expression']
 
-			'split 0': {
-				'name'		: 	'split 0',
+			},
+			'input': {
+				'name' 		: 	'input',
+				'value'		: 	'1 + 2 + 3 + 4 - 5 + 6 * 7 - 8 - 9 + 10 * 11 + 12'
+			},
+			'expression': {
+				'name' 		: 	'expression',
+				'value'		: 	[]
+			},
+
+			'split': {
+				'name'		: 	'split',
 				'function'	: 	returnTrue,
 				'next'		: 	['validate', 'invalid'],
-				'children'	: 	['char']
+				'children'	: 	['char'],
+				'variableNames'	: 	['collected_string']
+
 			},
+				'collected_string': {
+					'name'	: 	'collected_string',
+					'value'	: 	''
+				},
 
 
 			'validate': {
@@ -469,7 +462,7 @@ var vars = {
 				// split
 				
 				'char': {
-					'parents'	: 	['split 0'],
+					'parents'	: 	['split'],
 					'name'		: 	'char',
 					'function'	: 	collectChar,
 					'next'		: 	['last_to_save', 'char', 'save']
@@ -478,28 +471,28 @@ var vars = {
 
 
 				'save': {
-					'parents'	: 	['split 0'],
+					'parents'	: 	['split'],
 					'name'		: 	'save',
 					'function'	: 	save,
 					'next'		: 	[' ']
 				},
 
 				' ': {
-					'parents'	: 	['split 0'],
+					'parents'	: 	['split'],
 					'name'		: 	' ',
 					'function'	: 	parseChar,
 					'next'		: 	[' ', 'init']
 				},
 
 				'init': {
-					'parents'	: 	['split 0'],
+					'parents'	: 	['split'],
 					'name'		: 	'init',
 					'function'	: 	init,
 					'next'		: 	['char']
 				},
 
 				'last_to_save': {
-					'parents'	: 	['split 0'],
+					'parents'	: 	['split'],
 					'name'		: 	'last_to_save',
 					'function'	: 	lastToSave
 				},
@@ -584,6 +577,6 @@ var nodeReducer4 = (state = {vars}, action) => {
 // ['split', '0'], ['input_has_1_value', '0'] define a the start point and end point
 // through the state chart
 // ['input_has_1_value', '0']
-hcssm.visitRedux('split 0', vars, 1)
+hcssm.visitRedux('split', vars, 1)
 
 console.log('done w machine')
