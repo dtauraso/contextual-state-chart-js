@@ -1,4 +1,53 @@
 
+// export const getVariable = (graph, parentStateName, variableName) => {
+
+//     // The parent state should only be linked to one variable name at a time
+//     // in the below example:
+//     // You can say 'quantity 2' then call it 'quantity' when using it in the reducers
+//     // as long as the same parent doesn't also have a variable name called 'quantity 3'.
+//     // This is to allow the user to use variable names with this contextual state chart
+//     // at a simular level of detail they would use in a programming lnagugae
+
+//     let cell = getCell(graph, parentStateName)
+
+//     if(!cell) {
+//         return null
+//     }
+//     if(!Object.keys(cell).includes('variableNames')) {
+//         return null
+//     }
+//     let variable = null
+
+//     let variableNameIsInCellVariableNamesCount = 0
+//     let found = false
+
+//     cell.variableNames.forEach(cellVariableName => {
+//         if(cellVariableName.search(variableName) === -1) {
+//             return null
+//         }
+
+//         variableNameIsInCellVariableNamesCount += 1
+//         found = true
+//         variable = state[cellVariableName]
+//     })
+
+//     if(variableNameIsInCellVariableNamesCount > 1) {
+//         console.log(`You cannot have more than 1 variable name that contains |${variableName}|`)
+//         return null
+//     }
+//     if(!found) {
+//         console.log(`A variable similarly called ${variableName} may exist but there is no link from |${parentStateName}| to |${variableName}|`)
+//         return null
+
+//     }
+//     if(variable === null) {
+//         console.log(variableName, 'doesn\'t exist')
+//         return null
+//     }
+
+//     return variable
+// }
+
 
 function ListNode (current_parent, ith_parent, grand_parent) {
 

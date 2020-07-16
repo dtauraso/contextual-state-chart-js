@@ -5,7 +5,12 @@ var hcssm = require('./contextual_state_chart')
 //import * as hcssm from './contextual_state_chart.js'
 var cf = require('./common_functions')
 //import * as cf from './common_functions.js'
+var isNumber = (current_state, graph, parent_state) => {
 
+	// if the token from parent_state is a number
+	// convert to number
+	// save to expression
+}
 // current_state, graph, parent_state
 var parseChar = (current_state, graph, parent_state) => {
 
@@ -406,19 +411,69 @@ var vars = {
 			'root': {
 				'name'			: 	'root',
 				'function'		: 	returnTrue,
-				'children'		: 	['split'],
+				'children'		: 	['create expression'],//['split'],
 				'variableNames'	: 	['input', 'expression']
 
 			},
-			'input': {
-				'name' 		: 	'input',
-				'value'		: 	'1 + 2 + 3 + 4 - 5 + 6 * 7 - 8 - 9 + 10 * 11 + 12'
-			},
-			'expression': {
-				'name' 		: 	'expression',
-				'value'		: 	[]
-			},
+				'input': {
+					'name' 		: 	'input',
+					'value'		: 	'1 + 2 + 3 + 4 - 5 + 6 * 7 - 8 - 9 + 10 * 11 + 12'
+				},
+				'expression': {
+					'name' 		: 	'expression',
+					'value'		: 	[]
+				},
 
+				// read through the input and makes an expression if one can be made
+				'create expression': {
+					'name'			: 	'create expression',
+					'function'		: 	returnTrue,
+					'children' 		: 	['get number'],
+					'variableNames' : 	['token']
+				},
+					'token': {
+						'name': 'token',
+						'value': ''
+					},
+					'get number': {
+						'name' 		: 	'get number',
+						'function'	: 	'getNumber',
+						'next' 		: 	['get operator', 'input is valid'],
+						'children'	: 	['get chars']
+					},
+					'input is valid': {
+						'name'	: 	'input is valid',
+						'function'	: 'isInputValid'
+						// returns true if we hit end of string
+					},
+
+					'get operator': {
+						'name' 		: 	'get operator',
+						'function'	: 	'getOperator',
+						'next' 		: 	['get number'],
+						'children'	: 	['get chars']
+					},
+						'get chars': {
+							'name' 		: 	'get chars',
+							'function'	: 	'getChars'
+						},	
+			/*
+			parse
+				children
+					get number
+						next
+							get operator
+							is valid
+						children
+							get chars
+					get operator
+						next
+							get number
+						children
+							get chars
+			the data will be stored in an expression list when this is done
+
+			*/
 			'split': {
 				'name'		: 	'split',
 				'function'	: 	returnTrue,
