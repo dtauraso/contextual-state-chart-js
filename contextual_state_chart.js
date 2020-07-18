@@ -1,20 +1,13 @@
 
-exports.getVariable = (machine, variable_name) => {
+exports.getVariable = (graph, parentStateName, variableName) => {
 
     // The parent state should only be linked to one variable name at a time
     // in the below example:
     // You can say 'quantity 2' then call it 'quantity' when using it in the reducers
     // as long as the same parent doesn't also have a variable name called 'quantity 3'.
     // This is to allow the user to use variable names with this contextual state chart
-	// at a simular level of detail they would use in a programming lnagugae
-	// don't need to know exactly what parent the varaible is a child of
-	// don't need to copy entire variables or references to them into new variables lower down the machine
-	// this is not going to be productive for machines of > 100 levels deep
-	// var_name -> state parent
-	// look for it at graph[parent_state_head.current_parent]
-	// if it's not there, traverse up the parent linked list untill it's found or not found
-	let graph = machine['graph']
-	let parent_state_head = machine['parent_state_head']
+    // at a simular level of detail they would use in a programming lnagugae
+
     let cell = graph['node_graph2'][parentStateName]//getCell(graph, parentStateName)
 
     if(!cell) {
@@ -31,14 +24,14 @@ exports.getVariable = (machine, variable_name) => {
     cell.variableNames.forEach(cellVariableName => {
 
 		// this doesn't work if 1 vaiable name is a substring of the one we are loking for
-        if(cellVariableName.search(variable_name) === -1) {
+        if(cellVariableName.search(variableName) === -1) {
             return null
         }
 
         variableNameIsInCellVariableNamesCount += 1
 		found = true
 		// console.log(cellVariableName, Object.keys(graph['node_graph2']))
-		variable = graph['node_graph2'][variable_name]
+		variable = graph['node_graph2'][cellVariableName]
 		// console.log({variable})
     })
 
@@ -60,11 +53,11 @@ exports.getVariable = (machine, variable_name) => {
     return variable
 }
 
-exports.setVariable = (machine, variableName, newValue) => {
+exports.setVariable = (graph, parentStateName, variableName, newValue) => {
 
 	// console.log({parentStateName, variableName, newValue})
     // parentStateName is an array of strings
-    let variable = exports.getVariable(machine, variableName)
+    let variable = exports.getVariable(graph, parentStateName, variableName)
 	// console.log({variable, newValue})
 	variable.value = newValue
 }
@@ -106,7 +99,7 @@ exports.printVarStore = (graph) => {
 
 }
 
-exports.visitNode = (graph, next_state, state_metrics, parent_state) => {
+exports.visitNode = (graph, next_state, state_metrics, parent_state_head) => {
 	
 	if(next_state === undefined) {
 		console.log("the js syntax for the next states is wrong")
@@ -121,10 +114,16 @@ exports.visitNode = (graph, next_state, state_metrics, parent_state) => {
 		console.log(state, "doesn't have a function")
 		return state_metrics
 	}
+	parent_state = ''
+	if(parent_state_head !== null) {
+		parent_state = parent_state_head.current_parent
+	}
+	else {
+		parent_state = null
+	}
 	// update to use a parent state
 	// (current_state, graph, parent_state)
-	let machine = {graph, parent_state}
-	let success = state['function'](machine, next_state)
+	let success = state['function'](graph, parent_state, next_state)
 	if(!success) {
 		return state_metrics
 	}
@@ -136,20 +135,7 @@ exports.goDown1Level = (graph, machine_metrics, state_metrics) => {
 
 	let current_state = state_metrics['winning_state_name']
 	let current_state_object = graph['node_graph2'][current_state]
-	// variable_name_value_table_from_parents
-	/*
-	{parent_name : [variable state names]}
-
-	{variable_name: variable state reference}
-
-	would have to assume each path has unique variable names we can refer to the user defined part
-	of the variable name without accidentally picking the wrong variable
-	in case user violates this, delete the variable so they can't access it at all
-
-	do a linear search with the search function to find if they entered in a similar variable name
-	
-	*/
-	// get references to all values from the current parent
+				
 	machine_metrics['parent'] = new ListNode(current_state_object.name, 0, machine_metrics['parent'])
 	machine_metrics['indents'] += 1
 	machine_metrics['next_states'] = graph['node_graph2'][current_state]['children']
@@ -247,16 +233,11 @@ exports.visitRedux = (graph, start_state, indents) => {
 	// when machine is over
 		// delete nodes from head till we find one with next states length > 0
 	// assumes state_name actually runs
-
 	var i = 0
 	// start from the state state
 	let machine_metrics = {
 		next_states: [start_state],
 		parent: null,
-		variable_references_from_parent_path: {
-			parent_variable_names: {},
-			variable_name_value: {}
-		},
 		indents: indents
 	}
     while(machine_metrics['next_states'].length > 0)
@@ -279,9 +260,8 @@ exports.visitRedux = (graph, start_state, indents) => {
 
 			state_metrics = exports.visitNode(	graph,
 												next_state,
-												state_metrics//,
-												// machine_metrics['parent']
-												)
+												state_metrics,
+												machine_metrics['parent'])
 		})
 		// console.log({machine_metrics, state_metrics, graph})
 		// current state passes
