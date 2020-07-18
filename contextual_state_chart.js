@@ -59,7 +59,7 @@ exports.setVariable = (graph, parentStateName, variableName, newValue) => {
     // parentStateName is an array of strings
     let variable = exports.getVariable(graph, parentStateName, variableName)
 	// console.log({variable, newValue})
-	variable.value = newValue
+	graph['nodeGraph2'][variable.name]['value'] = newValue
 }
 
 function ListNode (currentParent, ithParent, grandParent) {
@@ -243,11 +243,11 @@ exports.visitRedux = (graph, startState, indents) => {
     while(machineMetrics['nextStates'].length > 0)
     {
     	//console.log(i)
-        if(i == 2)
-        {
-			console.log('we are out of states')
-			process.exit()
-        }
+        // if(i == 5)
+        // {
+		// 	console.log('we are out of states')
+		// 	process.exit()
+        // }
 		
 		//console.log(getIndents(indents), 'next_states', next_states)
 		let stateMetrics = {

@@ -200,10 +200,10 @@ var minus = (a, b) => {
 
 
 
-var returnTrue = (currentState, graph, parentState) => {
+var returnTrue = (graph, parentStateName, currentStateName) => {
 	return true
 }
-var returnFalse = (currentState, graph, parentState) => {
+var returnFalse = (graph, parentStateName, currentStateName) => {
 	return false
 }
 var resetForNextRound = (currentState, graph, parentState) => {
@@ -400,10 +400,56 @@ expression ->
 
 // }
 
-const getNumber = (graph, parentStateName, currentStateName) => {
-	console.log({parentStateName, currentStateName})
-	fail
+const numberGetDigit = (graph, parentStateName, currentStateName) => {
+
+	const input = hcssm.getVariable(graph, 'root', 'input').value
+	let i = hcssm.getVariable(graph, 'root', 'i0').value
+	let token = hcssm.getVariable(graph, 'create expression', 'token').value
+
+	// console.log({input, i, token})
+	if(i >= input.length) {
+		return false
+	}
+	if(!(input[i] >= '0' && input[i] <= '9')) {
+		return false
+	}
+
+	hcssm.setVariable(graph, 'create expression', 'token', token + input[i])
+	hcssm.setVariable(graph, 'root', 'i0', i + 1)
+
 	return true
+
+
+}
+const saveNumber = (graph, parentStateName, currentStateName) => {
+	console.log('saveNumber')
+	console.log({parentStateName, currentStateName})
+	let token = hcssm.getVariable(graph, 'create expression', 'token').value
+	if(Number(token) === NaN) {
+		return false
+	}
+	let expression = hcssm.getVariable(graph, 'root', 'expression').value
+
+	expression.push(Number(token))
+
+	
+	hcssm.setVariable(graph, 'root', 'expression', expression)
+	// console.log(graph['nodeGraph2']['expression'])
+	
+	// fail
+	return true
+}
+
+const isInputValid = (graph, parentStateName, currentStateName) => {
+	
+	// will only return true after we have read in all the input and it's a valid expression
+	const input = hcssm.getVariable(graph, 'root', 'input').value
+	let i = hcssm.getVariable(graph, 'root', 'i0').value
+
+	if(i >= input.length) {
+		return true
+	}
+	return false
 }
 var vars = {
 	'input' : /* passes '1 + 2 + 3 + 4',*//*'1 + 2 + 3 + 4 - 5 + 6 + 7 - 8 - 9 + 10 + 11 + 12',*//*'1+',*//*'1 +2',*/'1 + 2 + 3 + 4 - 5 + 6 * 7 - 8 - 9 + 10 * 11 + 12', // '1 '
@@ -439,6 +485,7 @@ var vars = {
 				'name'			: 	'root',
 				'function'		: 	returnTrue,
 				'children'		: 	['create expression'],//['split'],
+				// i0 instead of i so the variable name search will not pick the wrong one
 				'variableNames'	: 	['i0', 'input', 'expression']
 
 			},
@@ -461,7 +508,7 @@ var vars = {
 					'name'			: 	'create expression',
 					'function'		: 	returnTrue,
 					'children' 		: 	['number'],
-					'variable_names' : 	['token']
+					'variableNames' : 	['token']
 				},
 					'token': {
 						'name': 'token',
@@ -470,23 +517,24 @@ var vars = {
 					'number' : {
 						'name' 		: 	'number',
 						'function'	: 	returnTrue,
-						'next' 		: 	['operator', 'input is valid'],
-						'children' : 	['number get chars']
+						'next' 		: 	['input is valid', 'operator'],
+						'children' : 	['number get digit']
 					},
-						'number get chars': {
-							'name' 		: 	'get chars',
-							'function'	: 	'getChars',
-							'next'		: 	['get number'],
+						// we need to prove it's a number
+
+						'number get digit': {
+							'name' 		: 	'number get digit',
+							'function'	: 	numberGetDigit,
+							'next'		: 	['number get digit', 'save number'],
 
 						},
-						'get number': {
-							'name' 		: 	'get number',
-							'function'	: 	getNumber,
-							// 'children'	: 	['get chars'],
+						'save number': {
+							'name' 		: 	'save number',
+							'function'	: 	saveNumber,
 						},
 					'input is valid': {
 						'name'	: 	'input is valid',
-						'function'	: 'isInputValid'
+						'function'	: isInputValid
 						// returns true if we hit end of string
 					},
 					'operator' : {
