@@ -2,6 +2,8 @@
 //var createStore = require('redux')
 //import createStore from 'redux'
 var hcssm = require('./contextual_state_chart')
+// hcssm.getVariable
+
 //import * as hcssm from './contextual_state_chart.js'
 var cf = require('./common_functions')
 //import * as cf from './common_functions.js'
@@ -378,6 +380,29 @@ case a -> case b means case a is addressed first and is transformed into case b
 input -> expresion 
 expression -> 
 */
+
+
+const copyInput = (machine, current_state_name) => {
+
+	// console.log({parent_stateName, currentStateName})
+	// machine = {graph, parent_state_head}
+	// getVariable(machine, var_name)
+	// setVariable(machine, var_name, new_value)
+	const input = hcssm.getVariable(graph, parent_stateName, 'input').value
+	hcssm.setVariable(graph, 'create expression', 'input_for_parsing', input)
+	// console.log(graph)
+	console.log({stuff: hcssm.getVariable(graph, 'create expression', 'input_for_parsing')})
+	// fail
+	// console.log(graph)
+	return true
+
+}
+
+const getNumber = (machine, current_state_name) => {
+	console.log({parent_state_name, current_state_name})
+	fail
+	return true
+}
 var vars = {
 	'input' : /* passes '1 + 2 + 3 + 4',*//*'1 + 2 + 3 + 4 - 5 + 6 + 7 - 8 - 9 + 10 + 11 + 12',*//*'1+',*//*'1 +2',*/'1 + 2 + 3 + 4 - 5 + 6 * 7 - 8 - 9 + 10 * 11 + 12', // '1 '
 	// 10 - 18 - 8 - 42
@@ -412,9 +437,14 @@ var vars = {
 				'name'			: 	'root',
 				'function'		: 	returnTrue,
 				'children'		: 	['create expression'],//['split'],
-				'variableNames'	: 	['input', 'expression']
+				'variableNames'	: 	['i_0', 'input', 'expression']
 
 			},
+				'i_0':	{
+					'name'	: 'i_0',
+					'value'	: 0
+				},
+
 				'input': {
 					'name' 		: 	'input',
 					'value'		: 	'1 + 2 + 3 + 4 - 5 + 6 * 7 - 8 - 9 + 10 * 11 + 12'
@@ -427,36 +457,54 @@ var vars = {
 				// read through the input and makes an expression if one can be made
 				'create expression': {
 					'name'			: 	'create expression',
-					'function'		: 	returnTrue,
-					'children' 		: 	['get number'],
+					'function'		: 	copyInput,
+					'children' 		: 	['number'],
 					'variableNames' : 	['token']
 				},
 					'token': {
 						'name': 'token',
 						'value': ''
 					},
-					'get number': {
-						'name' 		: 	'get number',
-						'function'	: 	'getNumber',
-						'next' 		: 	['get operator', 'input is valid'],
-						'children'	: 	['get chars']
+					'number' : {
+						'name' 		: 	'number',
+						'function'	: 	returnTrue,
+						'next' 		: 	['operator', 'input is valid'],
+						'children' : 	['number get chars']
 					},
+						'number get chars': {
+							'name' 		: 	'get chars',
+							'function'	: 	'getChars',
+							'next'		: 	['get number'],
+
+						},
+						'get number': {
+							'name' 		: 	'get number',
+							'function'	: 	getNumber,
+							// 'children'	: 	['get chars'],
+						},
 					'input is valid': {
 						'name'	: 	'input is valid',
 						'function'	: 'isInputValid'
 						// returns true if we hit end of string
 					},
+					'operator' : {
+						'name' 		: 	'operator',
+						'function'	: 	returnTrue,
+						'next' 		: 	['number'],
+						'children' : 	['operator get chars'],
 
-					'get operator': {
-						'name' 		: 	'get operator',
-						'function'	: 	'getOperator',
-						'next' 		: 	['get number'],
-						'children'	: 	['get chars']
 					},
-						'get chars': {
+						'operator get chars': {
 							'name' 		: 	'get chars',
-							'function'	: 	'getChars'
-						},	
+							'function'	: 	'getChars',
+							'next'		: 	['get operator'],
+
+						},
+						'get operator': {
+							'name' 		: 	'get operator',
+							'function'	: 	'getOperator',
+						},
+						
 			/*
 			parse
 				children
@@ -619,19 +667,18 @@ var vars = {
 
 	'parsing_checks' : parsing_checks
 }
-var nodeReducer4 = (state = {vars}, action) => {
+// var nodeReducer4 = (state = {vars}, action) => {
 
-    //console.log("got here", action.type, action)
-    // set this false when the item enteres
-    return hcssm.universalReducer(state, action, state.vars)
+//     //console.log("got here", action.type, action)
+//     // set this false when the item enteres
+//     return hcssm.universalReducer(state, action, state.vars)
 
-}
-
+// }
 //var calculator_reducer = createStore(nodeReducer4)
 // -1 so highest level of graph isn't printed with an indent
 // ['split', '0'], ['input_has_1_value', '0'] define a the start point and end point
 // through the state chart
 // ['input_has_1_value', '0']
-hcssm.visitRedux('split', vars, 1)
+// hcssm.visitRedux(vars, 'root', 1)
 
 console.log('done w machine')
