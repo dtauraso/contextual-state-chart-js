@@ -7,24 +7,24 @@ var hcssm = require('./contextual_state_chart')
 //import * as hcssm from './contextual_state_chart.js'
 var cf = require('./common_functions')
 //import * as cf from './common_functions.js'
-var isNumber = (current_state, graph, parent_state) => {
+var isNumber = (currentState, graph, parentState) => {
 
 	// if the token from parent_state is a number
 	// convert to number
 	// save to expression
 }
 // current_state, graph, parent_state
-var parseChar = (current_state, graph, parent_state) => {
+var parseChar = (currentState, graph, parentState) => {
 
 	//console.log('in parseChar', node)
-	let state_name = current_state
+	let stateName = currentState
 	let i = graph['i']
 	let input = graph['input']
 
 	if(i >= input.length) {
 		return false
 	}
-	if(graph['parsing_checks'][state_name](current_state, graph))
+	if(graph['parsingShecks'][stateName](currentState, graph))
 	{
 		graph['i'] += 1
 		return true
@@ -32,107 +32,107 @@ var parseChar = (current_state, graph, parent_state) => {
 	return false
 }
 
-var getA = (current_state, graph, nparent_stateode) => {
+var getA = (currentState, graph, parentState) => {
 
 	// all chains start with this function
-	graph['operation_vars']['chain_length'] = 0
+	graph['operationVars']['chainLength'] = 0
 
 
 	let i = graph['i']
 	let input = graph['input']
-	graph['operation_vars']['a'] = input[i]
-	graph['operation_vars']['chain_length'] += 1
+	graph['operationVars']['a'] = input[i]
+	graph['operationVars']['chainLength'] += 1
 	graph['i'] += 1
 
 	
 	return true
 }
 
-var getB = (current_state, graph, parent_state) => {
+var getB = (currentState, graph, parentState) => {
 
 
 	let i = graph['i']
 	let input = graph['input']
-	graph['operation_vars']['b'] = input[i]
-	graph['operation_vars']['chain_length'] += 1
+	graph['operationVars']['b'] = input[i]
+	graph['operationVars']['chainLength'] += 1
 	graph['i'] += 1
 
 	
 	return true
 }
 
-var isOp = (current_state, graph, parent_state) => {
+var isOp = (currentState, graph, parentState) => {
 
 	// check current operand with jth operand
 	let i = graph['i']
 	let input = graph['input']
 
-	let j = graph['lex_vars']['j']
-	let operators = graph['lex_vars']['operators']
+	let j = graph['lexVars']['j']
+	let operators = graph['lexVars']['operators']
 	return input[i] === operators[j]
 
 }
 
-var evaluate = (current_state, graph, parent_state) => {
+var evaluate = (currentState, graph, parentState) => {
 
 
 	let i = graph['i']
 	let input = graph['input']
-	graph['operation_vars']['b'] = input[i]
+	graph['operationVars']['b'] = input[i]
 
 
-	let a = Number(graph['operation_vars']['a'])
-	let b = Number(graph['operation_vars']['b'])
+	let a = Number(graph['operationVars']['a'])
+	let b = Number(graph['operationVars']['b'])
 
-	let j = graph['lex_vars']['j']
-	let operators = graph['lex_vars']['operators']
-	let operations = graph['lex_vars']['operations']
+	let j = graph['lexVars']['j']
+	let operators = graph['lexVars']['operators']
+	let operations = graph['lexVars']['operations']
 
-	graph['operation_vars']['a'] = operations[operators[j]] (a, b)
-	graph['operation_vars']['b'] = 0
+	graph['operationVars']['a'] = operations[operators[j]] (a, b)
+	graph['operationVars']['b'] = 0
 	graph['i'] += 1
-	let str_a = String(graph['operation_vars']['a'])
+	let strA = String(graph['operationVars']['a'])
 
 
-	let chain_length = graph['operation_vars']['chain_length']
+	let chainLength = graph['operationVars']['chainLength']
 
-	let before_the_chain = graph['input'].slice(0, i - 2)
+	let beforeTheChain = graph['input'].slice(0, i - 2)
 
-	let before_the_chain_len = before_the_chain.length
-	let the_chain = str_a
+	let beforeTheChainLen = beforeTheChain.length
+	let theChain = strA
 
-	let after_the_chain = graph['input'].slice(i + 1, graph['input'].length)
+	let afterTheChain = graph['input'].slice(i + 1, graph['input'].length)
 
-	graph['input'] = before_the_chain
+	graph['input'] = beforeTheChain
 
-	graph['input'].push(the_chain)
-	for(var k in after_the_chain)
+	graph['input'].push(theChain)
+	for(var k in afterTheChain)
 	{
-		graph['input'].push(after_the_chain[k])
+		graph['input'].push(afterTheChain[k])
 	}
 
-	graph['i'] = before_the_chain_len
+	graph['i'] = beforeTheChainLen
 
 	return true
 }
 
-var ignoreOp = (current_state, graph, parent_state) => {
+var ignoreOp = (currentState, graph, parentState) => {
 
 	let i = graph['i']
 	let input = graph['input']
 
-	let j = graph['lex_vars']['j']
-	let operators = graph['lex_vars']['operators']
+	let j = graph['lexVars']['j']
+	let operators = graph['lexVars']['operators']
 
 	// need to prove input[i] is an operator, but not operators[j]
 
-	if(endOfInput(current_state, graph, parent_state))
+	if(endOfInput(currentState, graph, parentState))
 	{
 		return false
 	}
 	if(operators.includes(input[i]) && (input[i] !== operators[j]))
 	{
-		graph['operation_vars']['a'] = 0
+		graph['operationVars']['a'] = 0
 		return true
 	}
 	return false
@@ -140,7 +140,7 @@ var ignoreOp = (current_state, graph, parent_state) => {
 
 
 
-var endOfInput = (current_state, graph, parent_state) => {
+var endOfInput = (currentState, graph, parentState) => {
 
 
 	let i = graph['i']
@@ -149,29 +149,29 @@ var endOfInput = (current_state, graph, parent_state) => {
 	return i >= input.length
 }
 
-var inputIsInvalid = (current_state, graph, parent_state) => {
+var inputIsInvalid = (currentState, graph, parentState) => {
 	console.log('your input is invalid')
 	return true
 }
 
-var noMoreInput = (current_state, graph, parent_state) => {
+var noMoreInput = (currentState, graph, parentState) => {
 
-	return endOfInput(current_state, graph, parent_state)
+	return endOfInput(currentState, graph, parentState)
 
 }
 
 
-var saveDigit = (current_state, graph, parent_state) => {
-	let char = cf.getChar(current_state, graph)
+var saveDigit = (currentState, graph, parentState) => {
+	let char = cf.getChar(currentState, graph)
 
 	return (char >= '0' && char <= '9')
 }
 
 
 
-var isWhiteSpace = (current_state, graph) => {
+var isWhiteSpace = (currentState, graph) => {
 
-	return cf.getChar(current_state, graph) === ' '
+	return cf.getChar(currentState, graph) === ' '
 }
 
 
@@ -200,25 +200,25 @@ var minus = (a, b) => {
 
 
 
-var returnTrue = (current_state, graph, parent_state) => {
+var returnTrue = (currentState, graph, parentState) => {
 	return true
 }
-var returnFalse = (current_state, graph, parent_state) => {
+var returnFalse = (currentState, graph, parentState) => {
 	return false
 }
-var resetForNextRound = (current_state, graph, parent_state) => {
+var resetForNextRound = (currentState, graph, parentState) => {
 
 	let i = graph['i']
 	let input = graph['input']
 	if(i < input.length) {
 		return false
 	}
-	graph['lex_vars']['j'] += 1
+	graph['lexVars']['j'] += 1
 	graph['i'] = 0
 	return true
 }
 
-var showAndExit = (current_state, graph, parent_state) => {
+var showAndExit = (currentState, graph, parentState) => {
 
 	let input = graph['input']
 	if(input.length > 1) {
@@ -232,7 +232,7 @@ var showAndExit = (current_state, graph, parent_state) => {
 
 
 
-var collectChar = (current_state, graph, parent_state) => {
+var collectChar = (currentState, graph, parentState) => {
 
 	let i = graph['i']
 	let input = graph['input']
@@ -240,56 +240,56 @@ var collectChar = (current_state, graph, parent_state) => {
 	if(input[i] === ' ') {
 		return false
 	}
-	graph['collected_string'] += input[i]
+	graph['collectedString'] += input[i]
 	graph['i'] += 1
 	return true
 }
-var save = (current_state, graph, parent_state) => {
+var save = (currentState, graph, parentState) => {
 
 	let i = graph['i']
 	let input = graph['input']
 	if(input[i] !== ' ') {
 		return false
 	}
-	let collected_string = graph['collected_string']
-	graph['expression'].push(collected_string)
+	let collectedString = graph['collectedString']
+	graph['expression'].push(collectedString)
 	return true
 }
-var init = (current_state, graph, parent_state) => {
+var init = (currentState, graph, parentState) => {
 
 	let i = graph['i']
 	let input = graph['input']
 	if(input[i] === ' ') {
 		return false
 	}
-	graph['collected_string'] = ''
+	graph['collectedString'] = ''
 	return true
 }
 
-var lastToSave = (current_state, graph, parent_state) => {
+var lastToSave = (currentState, graph, parentState) => {
 
-	if(!endOfInput(current_state, graph, parent_state)) {
+	if(!endOfInput(currentState, graph, parentState)) {
 		return false
 	}
-	let collected_string = graph['collected_string']
-	graph['expression'].push(collected_string)
+	let collectedString = graph['collectedString']
+	graph['expression'].push(collectedString)
 	graph['input'] = graph['expression']
 	graph['i'] = 0
 	graph['expression'] = []
-	graph['collected_string'] = ''
+	graph['collectedString'] = ''
 	return true
 }
-var validOp = (current_state, graph, parent_state) => {
+var validOp = (currentState, graph, parentState) => {
 
 	let i = graph['i']
 	let input = graph['input']
-	if(!isOp(current_state, graph, parent_state)) {
+	if(!isOp(currentState, graph, parentState)) {
 		return false
 	}
-	graph['operation_vars']['a'] = input[i - 1]
+	graph['operationVars']['a'] = input[i - 1]
 	return true
 }
-var validate = (current_state, graph, parent_state) => {
+var validate = (currentState, graph, parentState) => {
 
 	// expressions list
 	// len > 3
@@ -311,7 +311,7 @@ var validate = (current_state, graph, parent_state) => {
 		if(i % 2 === 1)
 		{
 
-			if(!(input[i] in graph['lex_vars']['operations']))
+			if(!(input[i] in graph['lexVars']['operations']))
 			{
 				return false
 			}
@@ -337,11 +337,11 @@ var validate = (current_state, graph, parent_state) => {
 
 }
 
-var parsing_checks = {
+var parsingChecks = {
 
 	'op': isOp,
-	'value_ignore': cf.isDigit,
-	'op_ignore': ignoreOp,
+	'valueIgnore': cf.isDigit,
+	'opIgnore': ignoreOp,
 	' ': isWhiteSpace,
 
 }
@@ -381,25 +381,27 @@ input -> expresion
 expression -> 
 */
 
+// currentState, graph, parentState
+// const copyInput = (graph, parentStateName, currentStateName) => {
 
-const copyInput = (machine, current_state_name) => {
+// 	console.log('copy input')
+// 	// console.log({parentStateName, currentStateName})
+// 	// machine = {graph, parent_state_head}
+// 	// getVariable(machine, var_name)
+// 	// setVariable(machine, var_name, new_value)
+// 	const input = hcssm.getVariable(graph, parentStateName, 'input').value
+// 	console.log({input})
+// 	// hcssm.setVariable(graph, 'create expression', 'inputForParsing', input)
+// 	// console.log(graph)
+// 	console.log({stuff: hcssm.getVariable(graph, 'create expression', 'inputForParsing')})
+// 	// fail
+// 	// console.log(graph)
+// 	return true
 
-	// console.log({parent_stateName, currentStateName})
-	// machine = {graph, parent_state_head}
-	// getVariable(machine, var_name)
-	// setVariable(machine, var_name, new_value)
-	const input = hcssm.getVariable(graph, parent_stateName, 'input').value
-	hcssm.setVariable(graph, 'create expression', 'input_for_parsing', input)
-	// console.log(graph)
-	console.log({stuff: hcssm.getVariable(graph, 'create expression', 'input_for_parsing')})
-	// fail
-	// console.log(graph)
-	return true
+// }
 
-}
-
-const getNumber = (machine, current_state_name) => {
-	console.log({parent_state_name, current_state_name})
+const getNumber = (graph, parentStateName, currentStateName) => {
+	console.log({parentStateName, currentStateName})
 	fail
 	return true
 }
@@ -407,21 +409,21 @@ var vars = {
 	'input' : /* passes '1 + 2 + 3 + 4',*//*'1 + 2 + 3 + 4 - 5 + 6 + 7 - 8 - 9 + 10 + 11 + 12',*//*'1+',*//*'1 +2',*/'1 + 2 + 3 + 4 - 5 + 6 * 7 - 8 - 9 + 10 * 11 + 12', // '1 '
 	// 10 - 18 - 8 - 42
 	'expression' : [],
-	'collected_string' : '',
+	'collectedString' : '',
 	'i' : 0,
 
-	'operation_vars' : {
+	'operationVars' : {
 
 		'a' : 0,
 
 		'b' : 0},
 
-	'lex_vars' : {
+	'lexVars' : {
 		'operators' : ['*', '/', '-', '+'],
 		'j' : 0,
 		'operations' : {'*': mult, '/': divide, '+': plus, '-': minus}},
 	// this control graph uses string for states and cases
-	'node_graph2' : {
+	'nodeGraph2' : {
 
 			// any state with no 'next' attribute means it's a finishing state
 			/*
@@ -437,11 +439,11 @@ var vars = {
 				'name'			: 	'root',
 				'function'		: 	returnTrue,
 				'children'		: 	['create expression'],//['split'],
-				'variableNames'	: 	['i_0', 'input', 'expression']
+				'variableNames'	: 	['i0', 'input', 'expression']
 
 			},
-				'i_0':	{
-					'name'	: 'i_0',
+				'i0':	{
+					'name'	: 'i0',
 					'value'	: 0
 				},
 
@@ -457,9 +459,9 @@ var vars = {
 				// read through the input and makes an expression if one can be made
 				'create expression': {
 					'name'			: 	'create expression',
-					'function'		: 	copyInput,
+					'function'		: 	returnTrue,
 					'children' 		: 	['number'],
-					'variableNames' : 	['token']
+					'variable_names' : 	['token']
 				},
 					'token': {
 						'name': 'token',
@@ -527,11 +529,11 @@ var vars = {
 				'function'	: 	returnTrue,
 				'next'		: 	['validate', 'invalid'],
 				'children'	: 	['char'],
-				'variableNames'	: 	['collected_string']
+				'variableNames'	: 	['collectedString']
 
 			},
-				'collected_string': {
-					'name'	: 	'collected_string',
+				'collectedString': {
+					'name'	: 	'collectedString',
 					'value'	: 	''
 				},
 
@@ -540,24 +542,24 @@ var vars = {
 				'parents'	: 	[],
 				'name'		: 	'validate',
 				'function'	: 	validate,
-				'next'		: 	['evaluate_expression']
+				'next'		: 	['evaluateExpression']
 			},
 			'invalid': {
 				'parents'	: 	[],
 				'name'		: 	'invalid',
 				'function'	: 	inputIsInvalid
 			},
-			'evaluate_expression': {
+			'evaluateExpression': {
 				'parents'	: 	[],
-				'name'		: 	'evaluate_expression',
+				'name'		: 	'evaluateExpression',
 				'function'	: 	returnTrue,
-				'next'		: 	['input_has_1_value','evaluate_expression'],
+				'next'		: 	['inputHas1Value','evaluateExpression'],
 				'children'	: 	['a']
 			},
 
-			'input_has_1_value': {
+			'inputHas1Value': {
 				'parents'	: 	[],
-				'name'		: 	'input_has_1_value',
+				'name'		: 	'inputHas1Value',
 				'function'	: 	showAndExit,
 
 			},
@@ -568,7 +570,7 @@ var vars = {
 					'parents'	: 	['split'],
 					'name'		: 	'char',
 					'function'	: 	collectChar,
-					'next'		: 	['last_to_save', 'char', 'save']
+					'next'		: 	['lastToSave', 'char', 'save']
 				},
 
 
@@ -594,9 +596,9 @@ var vars = {
 					'next'		: 	['char']
 				},
 
-				'last_to_save': {
+				'lastToSave': {
 					'parents'	: 	['split'],
-					'name'		: 	'last_to_save',
+					'name'		: 	'lastToSave',
 					'function'	: 	lastToSave
 				},
 
@@ -607,11 +609,11 @@ var vars = {
 					'parents'	: 	['evaluate_expression'],
 					'name'		: 	'a',
 					'function'	: 	getA,
-					'next'		: 	['reset_for_next_round_of_input', 'op', 'op_ignore']
+					'next'		: 	['resetForNextRoundOfInput', 'op', 'opIgnore']
 				},
 
 				'op': {
-					'parents'	: 	['evaluate_expression'],
+					'parents'	: 	['evaluateExpression'],
 					'name'		: 	'op',
 					'function'	: 	parseChar,
 					'next'		: 	['error', 'b evaluate']
@@ -619,53 +621,53 @@ var vars = {
 				// add new step to save b?
 				// make a result variable to show the result?
 				'b evaluate': {
-					'parents'	: 	['evaluate_expression'],
+					'parents'	: 	['evaluateExpression'],
 					'name'		: 	'b evaluate',
 					'function'	: 	evaluate,
-					'next'		: 	['reset_for_next_round_of_input', 'a', 'op_ignore']
+					'next'		: 	['resetForNextRoundOfInput', 'a', 'opIgnore']
 				},
 
-				'op_ignore': {
-					'parents'	: 	['evaluate_expression'],
-					'name'		: 	'op_ignore',
+				'opIgnore': {
+					'parents'	: 	['evaluateExpression'],
+					'name'		: 	'opIgnore',
 					'function'	: 	parseChar,
-					'next'		: 	['error', 'value_ignore']
+					'next'		: 	['error', 'valueIgnore']
 				},
 
-				'value_ignore': {
-					'parents'	: 	['evaluate_expression'],
-					'name'		: 	'value_ignore',
+				'valueIgnore': {
+					'parents'	: 	['evaluateExpression'],
+					'name'		: 	'valueIgnore',
 					'function'	: 	parseChar,
-					'next'		: 	['reset_for_next_round_of_input', 'op_ignore', 'value_ignore valid_op']
+					'next'		: 	['resetForNextRoundOfInput', 'opIgnore', 'valueIgnore validOp']
 				},
 
-				'value_ignore valid_op': {
-					'parents'	: 	['evaluate_expression'],
-					'name'		: 	'value_ignore valid_op',
+				'valueIgnore validOp': {
+					'parents'	: 	['evaluateExpression'],
+					'name'		: 	'valueIgnore validOp',
 					'function'	: 	validOp,
 					'next'		: 	['op']
 				},
 
 				'error': {
-					'parents'	: 	['evaluate_expression'],
+					'parents'	: 	['evaluateExpression'],
 					'name'		: 	'error',
 					'function'	: 	noMoreInput
 				},
 
-				'reset_for_next_round_of_input': {
+				'resetForNextRoundOfInput': {
 					'parents'	: 	[],
-					'name'		: 	'reset_for_next_round_of_input',
+					'name'		: 	'resetForNextRoundOfInput',
 					'function'	: 	resetForNextRound,
-					'next'		: 	['end_of_evaluating']
+					'next'		: 	['endOfEvaluating']
 				},
-				'end_of_evaluating': {
+				'endOfEvaluating': {
 					'parents'	: 	[],
-					'name'		: 	'end_of_evaluating',
+					'name'		: 	'endOfEvaluating',
 					'function'	: 	returnTrue
 				},
 		},
 
-	'parsing_checks' : parsing_checks
+	'parsingChecks' : parsingChecks
 }
 // var nodeReducer4 = (state = {vars}, action) => {
 
@@ -679,6 +681,6 @@ var vars = {
 // ['split', '0'], ['input_has_1_value', '0'] define a the start point and end point
 // through the state chart
 // ['input_has_1_value', '0']
-// hcssm.visitRedux(vars, 'root', 1)
+hcssm.visitRedux(vars, 'root', 1)
 
 console.log('done w machine')
