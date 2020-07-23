@@ -422,23 +422,83 @@ const numberGetDigit = (graph, parentStateName, currentStateName) => {
 
 }
 const saveNumber = (graph, parentStateName, currentStateName) => {
-	console.log('saveNumber')
-	console.log({parentStateName, currentStateName})
+	// console.log('saveNumber')
+	let expression = hcssm.getVariable(graph, 'root', 'expression').value
+
+	// console.log({parentStateName, currentStateName, expression})
 	let token = hcssm.getVariable(graph, 'create expression', 'token').value
 	if(Number(token) === NaN) {
 		return false
 	}
-	let expression = hcssm.getVariable(graph, 'root', 'expression').value
 
 	expression.push(Number(token))
+	// console.log({parentStateName, currentStateName, expression})
 
-	
+	let i = hcssm.getVariable(graph, 'root', 'i0').value
+	let input = hcssm.getVariable(graph, 'root', 'input').value
+
+	while(input[i] === ' ') {i += 1}
 	hcssm.setVariable(graph, 'root', 'expression', expression)
+	hcssm.setVariable(graph, 'create expression', 'token', '')
+	hcssm.setVariable(graph, 'root', 'i0', i)
 	// console.log(graph['nodeGraph2']['expression'])
 	
 	// fail
 	return true
 }
+
+const operatorGetOperator = (graph, parentStateName, currentStateName) => {
+
+	const input = hcssm.getVariable(graph, 'root', 'input').value
+	let i = hcssm.getVariable(graph, 'root', 'i0').value
+	let token = hcssm.getVariable(graph, 'create expression', 'token').value
+	// console.log({input, i, token})
+	if(i >= input.length) {
+		return false
+	}
+	const operators = ['*', '/', '+', '-']
+	if(!(operators.includes(input[i]))) {
+		return false
+	}
+
+	hcssm.setVariable(graph, 'create expression', 'token', token + input[i])
+	hcssm.setVariable(graph, 'root', 'i0', i + 1)
+
+	return true
+
+
+}
+const saveOperator = (graph, parentStateName, currentStateName) => {
+	// console.log('saveOperator')
+	let expression = hcssm.getVariable(graph, 'root', 'expression').value
+
+	// console.log({parentStateName, currentStateName, expression})
+	let token = hcssm.getVariable(graph, 'create expression', 'token').value
+	const operators = ['*', '/', '+', '-']
+
+	if(!(operators.includes(token))) {
+		return false
+	}
+	// let expression = hcssm.getVariable(graph, 'root', 'expression').value
+
+	expression.push(token)
+
+	let i = hcssm.getVariable(graph, 'root', 'i0').value
+	let input = hcssm.getVariable(graph, 'root', 'input').value
+
+	while(input[i] === ' ') {i += 1}
+
+	hcssm.setVariable(graph, 'root', 'expression', expression)
+	hcssm.setVariable(graph, 'create expression', 'token', '')
+	hcssm.setVariable(graph, 'root', 'i0', i)
+
+	// console.log(graph['nodeGraph2']['expression'])
+	
+	// fail
+	return true
+}
+
+
 
 const isInputValid = (graph, parentStateName, currentStateName) => {
 	
@@ -514,14 +574,13 @@ var vars = {
 						'name': 'token',
 						'value': ''
 					},
+
 					'number' : {
 						'name' 		: 	'number',
 						'function'	: 	returnTrue,
 						'next' 		: 	['input is valid', 'operator'],
 						'children' : 	['number get digit']
 					},
-						// we need to prove it's a number
-
 						'number get digit': {
 							'name' 		: 	'number get digit',
 							'function'	: 	numberGetDigit,
@@ -535,43 +594,27 @@ var vars = {
 					'input is valid': {
 						'name'	: 	'input is valid',
 						'function'	: isInputValid
-						// returns true if we hit end of string
+						// returns true if we hit end of input and it's a valid expression
 					},
 					'operator' : {
 						'name' 		: 	'operator',
 						'function'	: 	returnTrue,
 						'next' 		: 	['number'],
-						'children' : 	['operator get chars'],
+						'children' : 	['operator get operator'],
 
 					},
-						'operator get chars': {
-							'name' 		: 	'get chars',
-							'function'	: 	'getChars',
+						'operator get operator': {
+							'name' 		: 	'operator get operator',
+							'function'	: 	operatorGetOperator,
 							'next'		: 	['get operator'],
 
 						},
 						'get operator': {
 							'name' 		: 	'get operator',
-							'function'	: 	'getOperator',
+							'function'	: 	saveOperator,
 						},
 						
-			/*
-			parse
-				children
-					get number
-						next
-							get operator
-							is valid
-						children
-							get chars
-					get operator
-						next
-							get number
-						children
-							get chars
-			the data will be stored in an expression list when this is done
-
-			*/
+			
 			'split': {
 				'name'		: 	'split',
 				'function'	: 	returnTrue,

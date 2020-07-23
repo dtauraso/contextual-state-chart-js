@@ -148,15 +148,18 @@ exports.moveUpParentAndDockIndents = (graph, machineMetrics) => {
 	while(parent !== null) {
 		machineMetrics['indents'] -= 1
 
-		// console.log({parent, state: graph['node_graph2'][parent.current_parent]})
-		if(graph['nodeGraph2'][parent.currentParent]['next'].length > 0) {
+		// console.log({parent})//, state: graph['node_graph2'][parent.current_parent]})
+		if(graph['nodeGraph2'][parent.currentParent]['next'] !== undefined) {
+			if(graph['nodeGraph2'][parent.currentParent]['next'].length > 0) {
 
 
-			machineMetrics['nextStates'] = graph['nodeGraph2'][parent.currentParent]['next']
-			machineMetrics['parent'] = parent.grandParent
-
-			return machineMetrics
+				machineMetrics['nextStates'] = graph['nodeGraph2'][parent.currentParent]['next']
+				machineMetrics['parent'] = parent.grandParent
+	
+				return machineMetrics
+			}
 		}
+		
 		else {
 			// we are at a parent end state
 			let temp = parent
@@ -243,11 +246,11 @@ exports.visitRedux = (graph, startState, indents) => {
     while(machineMetrics['nextStates'].length > 0)
     {
     	//console.log(i)
-        // if(i == 5)
-        // {
-		// 	console.log('we are out of states')
-		// 	process.exit()
-        // }
+        if(i == 75)
+        {
+			console.log('we are out of states')
+			process.exit()
+        }
 		
 		//console.log(getIndents(indents), 'next_states', next_states)
 		let stateMetrics = {
