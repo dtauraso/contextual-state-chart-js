@@ -32,6 +32,19 @@ var parseChar = (currentState, graph, parentState) => {
 	return false
 }
 
+const getA2 = (graph, parentState, currentState) => {
+
+	// all chains start with this function
+
+
+	let i = hcssm.getVariable(graph, 'root', 'iExpression').value
+	let expression = hcssm.getVariable(graph, 'root', 'expression').value
+	hcssm.setVariable(graph, 'evaluateExpression', 'a', expression[i])
+	hcssm.setVariable(graph, 'root', 'iExpression', i + 1)
+	
+	return true
+}
+
 var getA = (currentState, graph, parentState) => {
 
 	// all chains start with this function
@@ -43,6 +56,18 @@ var getA = (currentState, graph, parentState) => {
 	graph['operationVars']['a'] = input[i]
 	graph['operationVars']['chainLength'] += 1
 	graph['i'] += 1
+
+	
+	return true
+}
+
+var getB2 = (graph, parentState, currentState) => {
+
+
+	let i = hcssm.getVariable(graph, 'root', 'iExpression').value
+	let expression = hcssm.getVariable(graph, 'root', 'expression').value
+	hcssm.setVariable(graph, 'evaluateExpression', 'b', expression[i])
+	hcssm.setVariable(graph, 'root', 'iExpression', i + 1)
 
 	
 	return true
@@ -61,6 +86,23 @@ var getB = (currentState, graph, parentState) => {
 	return true
 }
 
+var isOp2 = (graph, parentState, currentState) => {
+
+	// check current operand with jth operand
+	// let i = graph['i']
+	// let input = graph['input']
+	let i = hcssm.getVariable(graph, 'root', 'iExpression').value
+	let expression = hcssm.getVariable(graph, 'root', 'expression').value
+	let j = hcssm.getVariable(graph, 'evaluateExpression', 'j').value
+	let operators = hcssm.getVariable(graph, 'evaluateExpression', 'operators').value
+
+	// let j = graph['lexVars']['j']
+	// let operators = graph['lexVars']['operators']
+	return expression[i] === operators[j]
+
+}
+
+
 var isOp = (currentState, graph, parentState) => {
 
 	// check current operand with jth operand
@@ -72,6 +114,67 @@ var isOp = (currentState, graph, parentState) => {
 	return input[i] === operators[j]
 
 }
+var evaluate2 = (graph, parentState, currentState) => {
+
+
+	let i = hcssm.getVariable(graph, 'root', 'iExpression').value
+	let expression = hcssm.getVariable(graph, 'root', 'expression').value
+
+	// let input = graph['input']
+	hcssm.setVariable(graph, 'evaluateExpression', 'b', expression[i])
+
+	// graph['operationVars']['b'] = input[i]
+
+
+	let a = hcssm.getVariable(graph, 'evaluateExpression', 'a').value
+	let b = hcssm.getVariable(graph, 'evaluateExpression', 'a').value
+
+
+	// let j = graph['lexVars']['j']
+	// let operators = graph['lexVars']['operators']
+	let j = hcssm.getVariable(graph, 'evaluateExpression', 'j').value
+	let operators = hcssm.getVariable(graph, 'evaluateExpression', 'operators').value
+	let operations = hcssm.getVariable(graph, 'evaluateExpression', 'operatorFunctions').value
+	// let operations = graph['lexVars']['operations']
+
+	hcssm.setVariable(graph, 'evaluateExpression', 'a', operations[operators[j]] (a, b))
+	hcssm.setVariable(graph, 'evaluateExpression', 'b', 0)
+
+	// graph['operationVars']['a'] = operations[operators[j]] (a, b)
+	// graph['operationVars']['b'] = 0
+	// hcssm.setVariable(graph, 'root', 'iExpression', i + 1)
+	i += 1
+	// graph['i'] += 1
+
+	let strA = hcssm.getVariable(graph, 'evaluateExpression', 'a').value
+	// String(graph['operationVars']['a'])
+
+
+	// let chainLength = graph['operationVars']['chainLength']
+
+	let beforeTheChain = expression.slice(0, i - 2)
+	// graph['input'].slice(0, i - 2)
+
+	let beforeTheChainLen = beforeTheChain.length
+	let theChain = strA
+
+	let afterTheChain = expression.slice(i + 1, expression.length)
+
+	expression = beforeTheChain
+	// graph['input'] = beforeTheChain
+	expression.push(theChain)
+	// graph['input'].push(theChain)
+	for(var k in afterTheChain)
+	{
+		expression.push(afterTheChain[k])
+		// graph['input'].push(afterTheChain[k])
+	}
+	hcssm.setVariable(graph, 'root', 'iExpression', beforeTheChainLen)
+	// graph['i'] = beforeTheChainLen
+
+	return true
+}
+
 
 var evaluate = (currentState, graph, parentState) => {
 
@@ -116,6 +219,36 @@ var evaluate = (currentState, graph, parentState) => {
 	return true
 }
 
+var ignoreOp2 = (graph, parentState, currentState) => {
+
+	let i = hcssm.getVariable(graph, 'root', 'iExpression').value
+	let expression = hcssm.getVariable(graph, 'root', 'expression').value
+
+	let j = hcssm.getVariable(graph, 'evaluateExpression', 'j').value
+	let operators = hcssm.getVariable(graph, 'evaluateExpression', 'operators').value
+
+	// let i = graph['i']
+	// let input = graph['input']
+
+	// let j = graph['lexVars']['j']
+	// let operators = graph['lexVars']['operators']
+
+	// need to prove input[i] is an operator, but not operators[j]
+
+	if(endOfInput2(graph, parentState, currentState))
+	{
+		return false
+	}
+	if(operators.includes(expression[i]) && expression[i] !== operators[j]) {
+	// if(operators.includes(input[i]) && (input[i] !== operators[j]))
+	// {
+		hcssm.setVariable(graph, 'evaluateExpression', 'a', 0)
+		// graph['operationVars']['a'] = 0
+		return true
+	}
+	return false
+}
+
 var ignoreOp = (currentState, graph, parentState) => {
 
 	let i = graph['i']
@@ -138,6 +271,16 @@ var ignoreOp = (currentState, graph, parentState) => {
 	return false
 }
 
+var endOfInput2 = (graph, parentState, currentState) => {
+
+	let i = hcssm.getVariable(graph, 'root', 'iExpression').value
+	let expression = hcssm.getVariable(graph, 'root', 'expression').value
+
+	// let i = graph['i']
+	// let input = graph['input']
+
+	return i >= expression.length
+}
 
 
 var endOfInput = (currentState, graph, parentState) => {
@@ -152,6 +295,12 @@ var endOfInput = (currentState, graph, parentState) => {
 var inputIsInvalid = (currentState, graph, parentState) => {
 	console.log('your input is invalid')
 	return true
+}
+
+var noMoreInput2 = (graph, parentState, currentState) => {
+
+	return endOfInput2(graph, parentState, currentState)
+
 }
 
 var noMoreInput = (currentState, graph, parentState) => {
@@ -199,10 +348,17 @@ var minus = (a, b) => {
 
 
 
+var returnTrue2 = (graph, parentStateName, currentStateName) => {
+	return true
+}
 
 var returnTrue = (graph, parentStateName, currentStateName) => {
 	return true
 }
+var returnFalse2 = (graph, parentStateName, currentStateName) => {
+	return false
+}
+
 var returnFalse = (graph, parentStateName, currentStateName) => {
 	return false
 }
@@ -546,7 +702,7 @@ var vars = {
 				'function'		: 	returnTrue,
 				'children'		: 	['create expression'],//['split'],
 				// i0 instead of i so the variable name search will not pick the wrong one
-				'variableNames'	: 	['i0', 'input', 'expression']
+				'variableNames'	: 	['i0', 'input', 'iExpression', 'expression']
 
 			},
 				'i0':	{
@@ -557,6 +713,11 @@ var vars = {
 				'input': {
 					'name' 		: 	'input',
 					'value'		: 	'1 + 2 + 3 + 4 - 5 + 6 * 7 - 8 - 9 + 10 * 11 + 12'
+				},
+
+				'iExpression':	{
+					'name'	: 'iExpression',
+					'value'	: 0
 				},
 				'expression': {
 					'name' 		: 	'expression',
@@ -613,98 +774,42 @@ var vars = {
 							'name' 		: 	'get operator',
 							'function'	: 	saveOperator,
 						},
-						
-			
-			'split': {
-				'name'		: 	'split',
-				'function'	: 	returnTrue,
-				'next'		: 	['validate', 'invalid'],
-				'children'	: 	['char'],
-				'variableNames'	: 	['collectedString']
 
-			},
-				'collectedString': {
-					'name'	: 	'collectedString',
-					'value'	: 	''
-				},
-
-
-			'validate': {
-				'parents'	: 	[],
-				'name'		: 	'validate',
-				'function'	: 	validate,
-				'next'		: 	['evaluateExpression']
-			},
-			'invalid': {
-				'parents'	: 	[],
-				'name'		: 	'invalid',
-				'function'	: 	inputIsInvalid
-			},
 			'evaluateExpression': {
-				'parents'	: 	[],
 				'name'		: 	'evaluateExpression',
 				'function'	: 	returnTrue,
 				'next'		: 	['inputHas1Value','evaluateExpression'],
-				'children'	: 	['a']
+				'children'	: 	['a0'],
+				'variableNames':	['a', 'b', 'operators', 'j', 'operatorFunctions']
 			},
-
-			'inputHas1Value': {
-				'parents'	: 	[],
-				'name'		: 	'inputHas1Value',
-				'function'	: 	showAndExit,
-
-			},
-
-				// split
-				
-				'char': {
-					'parents'	: 	['split'],
-					'name'		: 	'char',
-					'function'	: 	collectChar,
-					'next'		: 	['lastToSave', 'char', 'save']
-				},
-
-
-
-				'save': {
-					'parents'	: 	['split'],
-					'name'		: 	'save',
-					'function'	: 	save,
-					'next'		: 	[' ']
-				},
-
-				' ': {
-					'parents'	: 	['split'],
-					'name'		: 	' ',
-					'function'	: 	parseChar,
-					'next'		: 	[' ', 'init']
-				},
-
-				'init': {
-					'parents'	: 	['split'],
-					'name'		: 	'init',
-					'function'	: 	init,
-					'next'		: 	['char']
-				},
-
-				'lastToSave': {
-					'parents'	: 	['split'],
-					'name'		: 	'lastToSave',
-					'function'	: 	lastToSave
-				},
-
-
-				// evaluate_expression
 
 				'a': {
-					'parents'	: 	['evaluate_expression'],
-					'name'		: 	'a',
+					'name': 'a',
+					'value' : 0
+				},
+				'b': {
+					'name': 'b',
+					'value' : 0
+				},
+				'operators': {
+					'name': 'operators',
+					'value': ['*', '/', '-', '+']
+				},
+				'j': {
+					'name': 'j',
+					'value' : 0
+				},
+				'operatorFunctions' : {
+					'name': 'operatorFunctions',
+					'value': {'*': mult, '/': divide, '+': plus, '-': minus}
+				},
+				'a0': {
+					'name'		: 	'a0',
 					'function'	: 	getA,
 					'next'		: 	['resetForNextRoundOfInput', 'op', 'opIgnore']
 				},
 
 				'op': {
-					'parents'	: 	['evaluateExpression'],
 					'name'		: 	'op',
 					'function'	: 	parseChar,
 					'next'		: 	['error', 'b evaluate']
@@ -712,50 +817,48 @@ var vars = {
 				// add new step to save b?
 				// make a result variable to show the result?
 				'b evaluate': {
-					'parents'	: 	['evaluateExpression'],
 					'name'		: 	'b evaluate',
 					'function'	: 	evaluate,
-					'next'		: 	['resetForNextRoundOfInput', 'a', 'opIgnore']
+					'next'		: 	['resetForNextRoundOfInput', 'a0', 'opIgnore']
 				},
 
 				'opIgnore': {
-					'parents'	: 	['evaluateExpression'],
 					'name'		: 	'opIgnore',
 					'function'	: 	parseChar,
 					'next'		: 	['error', 'valueIgnore']
 				},
 
 				'valueIgnore': {
-					'parents'	: 	['evaluateExpression'],
 					'name'		: 	'valueIgnore',
 					'function'	: 	parseChar,
 					'next'		: 	['resetForNextRoundOfInput', 'opIgnore', 'valueIgnore validOp']
 				},
 
 				'valueIgnore validOp': {
-					'parents'	: 	['evaluateExpression'],
 					'name'		: 	'valueIgnore validOp',
 					'function'	: 	validOp,
 					'next'		: 	['op']
 				},
 
 				'error': {
-					'parents'	: 	['evaluateExpression'],
 					'name'		: 	'error',
 					'function'	: 	noMoreInput
 				},
 
 				'resetForNextRoundOfInput': {
-					'parents'	: 	[],
 					'name'		: 	'resetForNextRoundOfInput',
 					'function'	: 	resetForNextRound,
 					'next'		: 	['endOfEvaluating']
 				},
 				'endOfEvaluating': {
-					'parents'	: 	[],
 					'name'		: 	'endOfEvaluating',
 					'function'	: 	returnTrue
 				},
+			'inputHas1Value': {
+				'name'		: 	'inputHas1Value',
+				'function'	: 	showAndExit,
+
+			},
 		},
 
 	'parsingChecks' : parsingChecks
