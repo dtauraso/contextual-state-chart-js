@@ -292,6 +292,11 @@ var endOfInput = (currentState, graph, parentState) => {
 	return i >= input.length
 }
 
+var inputIsInvalid2 = (graph, parentState, currentState) => {
+	console.log('your input is invalid')
+	return true
+}
+
 var inputIsInvalid = (currentState, graph, parentState) => {
 	console.log('your input is invalid')
 	return true
@@ -362,6 +367,25 @@ var returnFalse2 = (graph, parentStateName, currentStateName) => {
 var returnFalse = (graph, parentStateName, currentStateName) => {
 	return false
 }
+var resetForNextRound2 = (graph, parentState, currentState) => {
+
+	let i = hcssm.getVariable(graph, 'root', 'iExpression').value
+	let expression = hcssm.getVariable(graph, 'root', 'expression').value
+
+	// let i = graph['i']
+	// let input = graph['input']
+	if(i < expression.length) {
+		return false
+	}
+	let j = hcssm.getVariable(graph, 'evaluateExpression', 'j').value
+	hcssm.setVariable(graph, 'evaluateExpression', 'j', j + 1)
+	// graph['lexVars']['j'] += 1
+	hcssm.setVariable(graph, 'root', 'iExpression', 0)
+
+	// graph['i'] = 0
+	return true
+}
+
 var resetForNextRound = (currentState, graph, parentState) => {
 
 	let i = graph['i']
@@ -372,6 +396,19 @@ var resetForNextRound = (currentState, graph, parentState) => {
 	graph['lexVars']['j'] += 1
 	graph['i'] = 0
 	return true
+}
+
+var showAndExit2 = (graph, parentState, currentState) => {
+
+	let expression = hcssm.getVariable(graph, 'root', 'expression').value
+
+	// let input = graph['input']
+	if(expression.length > 1) {
+		return false
+	}
+	console.log(expression[0])
+	return true
+
 }
 
 var showAndExit = (currentState, graph, parentState) => {
@@ -388,53 +425,68 @@ var showAndExit = (currentState, graph, parentState) => {
 
 
 
-var collectChar = (currentState, graph, parentState) => {
+// var collectChar = (currentState, graph, parentState) => {
 
-	let i = graph['i']
-	let input = graph['input']
+// 	let i = graph['i']
+// 	let input = graph['input']
 
-	if(input[i] === ' ') {
+// 	if(input[i] === ' ') {
+// 		return false
+// 	}
+// 	graph['collectedString'] += input[i]
+// 	graph['i'] += 1
+// 	return true
+// }
+// var save = (currentState, graph, parentState) => {
+
+// 	let i = graph['i']
+// 	let input = graph['input']
+// 	if(input[i] !== ' ') {
+// 		return false
+// 	}
+// 	let collectedString = graph['collectedString']
+// 	graph['expression'].push(collectedString)
+// 	return true
+// }
+// var init = (currentState, graph, parentState) => {
+
+// 	let i = graph['i']
+// 	let input = graph['input']
+// 	if(input[i] === ' ') {
+// 		return false
+// 	}
+// 	graph['collectedString'] = ''
+// 	return true
+// }
+
+// var lastToSave = (currentState, graph, parentState) => {
+
+// 	if(!endOfInput(currentState, graph, parentState)) {
+// 		return false
+// 	}
+// 	let collectedString = graph['collectedString']
+// 	graph['expression'].push(collectedString)
+// 	graph['input'] = graph['expression']
+// 	graph['i'] = 0
+// 	graph['expression'] = []
+// 	graph['collectedString'] = ''
+// 	return true
+// }
+var validOp2 = (graph, parentState, currentState) => {
+
+	let i = hcssm.getVariable(graph, 'root', 'iExpression').value
+	let expression = hcssm.getVariable(graph, 'root', 'expression').value
+
+	// let i = graph['i']
+	// let input = graph['input']
+	if(!isOp2(currentState, graph, parentState)) {
 		return false
 	}
-	graph['collectedString'] += input[i]
-	graph['i'] += 1
-	return true
-}
-var save = (currentState, graph, parentState) => {
-
-	let i = graph['i']
-	let input = graph['input']
-	if(input[i] !== ' ') {
-		return false
-	}
-	let collectedString = graph['collectedString']
-	graph['expression'].push(collectedString)
-	return true
-}
-var init = (currentState, graph, parentState) => {
-
-	let i = graph['i']
-	let input = graph['input']
-	if(input[i] === ' ') {
-		return false
-	}
-	graph['collectedString'] = ''
+	hcssm.setVariable(graph, 'evaluateExpression', 'a', expression[i - 1])
+	// graph['operationVars']['a'] = input[i - 1]
 	return true
 }
 
-var lastToSave = (currentState, graph, parentState) => {
-
-	if(!endOfInput(currentState, graph, parentState)) {
-		return false
-	}
-	let collectedString = graph['collectedString']
-	graph['expression'].push(collectedString)
-	graph['input'] = graph['expression']
-	graph['i'] = 0
-	graph['expression'] = []
-	graph['collectedString'] = ''
-	return true
-}
 var validOp = (currentState, graph, parentState) => {
 
 	let i = graph['i']
@@ -661,8 +713,10 @@ const isInputValid = (graph, parentStateName, currentStateName) => {
 	// will only return true after we have read in all the input and it's a valid expression
 	const input = hcssm.getVariable(graph, 'root', 'input').value
 	let i = hcssm.getVariable(graph, 'root', 'i0').value
+	let expression = hcssm.getVariable(graph, 'root', 'expression').value
 
 	if(i >= input.length) {
+		console.log({expression})
 		return true
 	}
 	return false
