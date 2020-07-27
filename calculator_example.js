@@ -832,7 +832,7 @@ var vars = {
 			'evaluateExpression': {
 				'name'		: 	'evaluateExpression',
 				'function'	: 	returnTrue,
-				'next'		: 	['inputHas1Value','evaluateExpression'],
+				'next'		: 	['inputHas1Value'/*,'evaluateExpression'*/],
 				'children'	: 	['a0'],
 				'variableNames':	['a', 'b', 'operators', 'j', 'operatorFunctions']
 			},
@@ -857,52 +857,53 @@ var vars = {
 					'name': 'operatorFunctions',
 					'value': {'*': mult, '/': divide, '+': plus, '-': minus}
 				},
+				// get, save, increment or update the array
 				'a0': {
 					'name'		: 	'a0',
-					'function'	: 	getA,
+					'function'	: 	getA2, // increment
 					'next'		: 	['resetForNextRoundOfInput', 'op', 'opIgnore']
 				},
 
 				'op': {
 					'name'		: 	'op',
-					'function'	: 	parseChar,
-					'next'		: 	['error', 'b evaluate']
+					'function'	: 	isOp2, // increment
+					'next'		: 	[/*'error',*/ 'b evaluate']
 				},
 				// add new step to save b?
 				// make a result variable to show the result?
 				'b evaluate': {
 					'name'		: 	'b evaluate',
-					'function'	: 	evaluate,
-					'next'		: 	['resetForNextRoundOfInput', 'a0', 'opIgnore']
+					'function'	: 	evaluate2, // updates the array
+					'next'		: 	[/*'resetForNextRoundOfInput',*/ 'a0'/*, 'opIgnore'*/]
 				},
 
 				'opIgnore': {
 					'name'		: 	'opIgnore',
-					'function'	: 	parseChar,
-					'next'		: 	['error', 'valueIgnore']
+					'function'	: 	ignoreOp2, // increment
+					'next'		: 	[/*'error',*/ 'a0'/*'valueIgnore'*/]
 				},
 
-				'valueIgnore': {
-					'name'		: 	'valueIgnore',
-					'function'	: 	parseChar,
-					'next'		: 	['resetForNextRoundOfInput', 'opIgnore', 'valueIgnore validOp']
-				},
+				// 'valueIgnore': {
+				// 	'name'		: 	'valueIgnore',
+				// 	'function'	: 	parseChar,
+				// 	'next'		: 	['resetForNextRoundOfInput', 'opIgnore', 'valueIgnore validOp']
+				// },
 
-				'valueIgnore validOp': {
-					'name'		: 	'valueIgnore validOp',
-					'function'	: 	validOp,
-					'next'		: 	['op']
-				},
+				// 'valueIgnore validOp': {
+				// 	'name'		: 	'valueIgnore validOp',
+				// 	'function'	: 	validOp,
+				// 	'next'		: 	['op']
+				// },
 
-				'error': {
-					'name'		: 	'error',
-					'function'	: 	noMoreInput
-				},
+				// 'error': {
+				// 	'name'		: 	'error',
+				// 	'function'	: 	noMoreInput
+				// },
 
 				'resetForNextRoundOfInput': {
 					'name'		: 	'resetForNextRoundOfInput',
 					'function'	: 	resetForNextRound,
-					'next'		: 	['endOfEvaluating']
+					'next'		: 	['endOfEvaluating', 'a0']
 				},
 				'endOfEvaluating': {
 					'name'		: 	'endOfEvaluating',
