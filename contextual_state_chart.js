@@ -266,6 +266,10 @@ exports.visitRedux = (graph, startState, indents) => {
 												stateMetrics,
 												machineMetrics['parent'])
 		})
+		// Object.keys(user).forEach(userAttribute => {
+		// 	console.log(userAttribute)
+		// 	console.log(user[userAttribute])
+		// })
 		// console.log({machine_metrics, state_metrics, graph})
 		// current state passes
 		if(stateMetrics['passes']) {

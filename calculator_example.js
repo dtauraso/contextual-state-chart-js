@@ -721,6 +721,64 @@ const isInputValid = (graph, parentStateName, currentStateName) => {
 	}
 	return false
 }
+const makeStates = (listOfStates) => {
+
+	/**
+	
+	{
+		'name'		: 	'parse to tokens',
+		'function'	: 	returnTrue,
+		'next'		: 	['evaluateExpression'],
+		'children'	: 	['create expression'],
+		'variableNams': ['i']
+	}
+	id -> name
+	edgeName -> {	variableName: {originState: id},
+					children: id}
+
+	into
+	{
+		'name'		: 	'parse to tokens',
+		'function'	: 	returnTrue,
+		'next'		: 	[1],
+		'children'	: 	[2],
+		'variableNams': {i:3}
+	}
+
+	
+
+	name -> id
+
+	what if name is the same?
+	if we collect the ids how do we know what is mapped to what?
+	how do we make sure both var names don't map to the same location?
+
+	'next'		: 	{'evaluateExpression': i},
+
+	varName: set(parent names)
+	 */
+
+	let edges = {}
+	listOfStates.forEach((state, i) => {
+
+		Object.keys(state)	.filter(key => key === 'next' || 'children' || 'variableNames')
+							.forEach(key => {
+
+								if(key === 'variablesNames') {
+									state[key].forEach(edgeName => {
+										// edges doesn't have anything in it to start
+										if(!(state.name in edges[edgeName].variableNames)) {
+											edges[edgeName].variableNames[state.name] = i
+										}
+										
+									})
+									return {[key]: {originState: state.name, id: i } // fails cause we are making a new object each time and the
+									// plan says we can have multiple orign states per object being returned
+								}
+							})
+
+	})
+}
 var vars = {
 	'input' : /* passes '1 + 2 + 3 + 4',*//*'1 + 2 + 3 + 4 - 5 + 6 + 7 - 8 - 9 + 10 + 11 + 12',*//*'1+',*//*'1 +2',*/'1 + 2 + 3 + 4 - 5 + 6 * 7 - 8 - 9 + 10 * 11 + 12', // '1 '
 	// 10 - 18 - 8 - 42
@@ -739,6 +797,7 @@ var vars = {
 		'j' : 0,
 		'operations' : {'*': mult, '/': divide, '+': plus, '-': minus}},
 	// this control graph uses string for states and cases
+
 	'nodeGraph2' : {
 
 			// any state with no 'next' attribute means it's a finishing state
@@ -754,29 +813,46 @@ var vars = {
 			'root': {
 				'name'			: 	'root',
 				'function'		: 	returnTrue,
-				'children'		: 	['create expression'],//['split'],
-				// i0 instead of i so the variable name search will not pick the wrong one
-				'variableNames'	: 	['i0', 'input', 'iExpression', 'expression']
+				'children'		: 	['parse to tokens'],//['split'],
+
+				// so we can partial match on a context name
+				// no substring variable names
+				// no adding context names to index variables
+		  		'variableNames'	: 	['arithmaticInput', 'expression']
 
 			},
-				'i0':	{
-					'name'	: 'i0',
-					'value'	: 0
-				},
-
-				'input': {
-					'name' 		: 	'input',
+				'arithmaticInput': {
+					'name' 		: 	'arithmaticInput',
 					'value'		: 	'1 + 2 + 3 + 4 - 5 + 6 * 7 - 8 - 9 + 10 * 11 + 12'
-				},
-
-				'iExpression':	{
-					'name'	: 'iExpression',
-					'value'	: 0
 				},
 				'expression': {
 					'name' 		: 	'expression',
 					'value'		: 	[]
 				},
+
+				'parse to tokens': {
+					'name'		: 	'parse to tokens',
+					'function'	: 	returnTrue,
+					'next'		: 	['evaluateExpression'],
+					'children'	: 	['create expression'],
+					'variableNams': ['i']
+				},
+				// have 2 states
+				// 1 for parsing the input into tokens
+				// 1 for evaluating the expression that was copied from the tokens
+				// now we can use i for 2 different senarios
+				'i':	{
+					'name'	: 'i',
+					'value'	: 0
+				},
+
+
+				// should be inside evaluate expression
+				'iExpression':	{
+					'name'	: 'iExpression',
+					'value'	: 0
+				},
+				
 
 				// read through the input and makes an expression if one can be made
 				'create expression': {
@@ -834,7 +910,7 @@ var vars = {
 				'function'	: 	returnTrue,
 				'next'		: 	['inputHas1Value'/*,'evaluateExpression'*/],
 				'children'	: 	['a0'],
-				'variableNames':	['a', 'b', 'operators', 'j', 'operatorFunctions']
+				'variableNames':['a', 'b', 'operators', 'j', 'operatorFunctions']
 			},
 
 				'a': {
