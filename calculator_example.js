@@ -732,10 +732,16 @@ const makeStates = (listOfStates) => {
 		'children'	: 	['create expression'],
 		'variableNams': ['i']
 	}
-	id -> name
-	edgeName -> {	variableName: {originState: id},
-					children: id}
+	add in the states first as they are unique
 
+	record the variable names in the below object to know if we added that variable in or a new one
+	this way we can append each new variable name to the end of the array and therefore know what the id of it is
+
+	save as {id -> {}} not [{}]
+	enumate the key value pairs
+	stateName -> id
+	variableName -> {parentName: variableNameId}
+	how do I link the edge to it's id and not the state's id?
 	into
 	{
 		'name'		: 	'parse to tokens',
@@ -757,6 +763,7 @@ const makeStates = (listOfStates) => {
 
 	varName: set(parent names)
 	 */
+	// make a new list of states
 
 	let edges = {}
 	listOfStates.forEach((state, i) => {
@@ -766,6 +773,10 @@ const makeStates = (listOfStates) => {
 
 								if(key === 'variablesNames') {
 									state[key].forEach(edgeName => {
+										if(!(edgeName in edges)) {
+											// this is not the right id #
+											edges[edgeName] = {'variableName': {[state.name]: id}}
+										}
 										// edges doesn't have anything in it to start
 										if(!(state.name in edges[edgeName].variableNames)) {
 											edges[edgeName].variableNames[state.name] = i
