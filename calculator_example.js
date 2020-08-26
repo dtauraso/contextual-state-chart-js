@@ -764,31 +764,14 @@ const makeStates = (listOfStates) => {
 	varName: set(parent names)
 	 */
 	// make a new list of states
-
-	let edges = {}
-	listOfStates.forEach((state, i) => {
-
-		Object.keys(state)	.filter(key => key === 'next' || 'children' || 'variableNames')
-							.forEach(key => {
-
-								if(key === 'variablesNames') {
-									state[key].forEach(edgeName => {
-										if(!(edgeName in edges)) {
-											// this is not the right id #
-											edges[edgeName] = {'variableName': {[state.name]: id}}
-										}
-										// edges doesn't have anything in it to start
-										if(!(state.name in edges[edgeName].variableNames)) {
-											edges[edgeName].variableNames[state.name] = i
-										}
-										
-									})
-									return {[key]: {originState: state.name, id: i } // fails cause we are making a new object each time and the
-									// plan says we can have multiple orign states per object being returned
-								}
-							})
-
+	let newListOfStates = listOfStates.map(state => {
+		if(!Object.keys(state).includes('value')) {
+			return state
+		}
 	})
+
+	
+	
 }
 var vars = {
 	'input' : /* passes '1 + 2 + 3 + 4',*//*'1 + 2 + 3 + 4 - 5 + 6 + 7 - 8 - 9 + 10 + 11 + 12',*//*'1+',*//*'1 +2',*/'1 + 2 + 3 + 4 - 5 + 6 * 7 - 8 - 9 + 10 * 11 + 12', // '1 '
