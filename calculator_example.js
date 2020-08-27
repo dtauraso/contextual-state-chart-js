@@ -37,10 +37,10 @@ const getA2 = (graph, parentState, currentState) => {
 	// all chains start with this function
 
 
-	let i = hcssm.getVariable(graph, 'root', 'iExpression').value
+	let i1 = hcssm.getVariable(graph, 'root', 'i1').value
 	let expression = hcssm.getVariable(graph, 'root', 'expression').value
-	hcssm.setVariable(graph, 'evaluateExpression', 'a', expression[i])
-	hcssm.setVariable(graph, 'root', 'iExpression', i + 1)
+	hcssm.setVariable(graph, 'evaluateExpression', 'a', expression[i1])
+	hcssm.setVariable(graph, 'root', 'i1', i1 + 1)
 	
 	return true
 }
@@ -64,10 +64,10 @@ var getA = (currentState, graph, parentState) => {
 var getB2 = (graph, parentState, currentState) => {
 
 
-	let i = hcssm.getVariable(graph, 'root', 'iExpression').value
+	let i1 = hcssm.getVariable(graph, 'root', 'i1').value
 	let expression = hcssm.getVariable(graph, 'root', 'expression').value
-	hcssm.setVariable(graph, 'evaluateExpression', 'b', expression[i])
-	hcssm.setVariable(graph, 'root', 'iExpression', i + 1)
+	hcssm.setVariable(graph, 'evaluateExpression', 'b', expression[i1])
+	hcssm.setVariable(graph, 'root', 'i1', i1 + 1)
 
 	
 	return true
@@ -91,14 +91,14 @@ var isOp2 = (graph, parentState, currentState) => {
 	// check current operand with jth operand
 	// let i = graph['i']
 	// let input = graph['input']
-	let i = hcssm.getVariable(graph, 'root', 'iExpression').value
+	let i1 = hcssm.getVariable(graph, 'root', 'i1').value
 	let expression = hcssm.getVariable(graph, 'root', 'expression').value
 	let j = hcssm.getVariable(graph, 'evaluateExpression', 'j').value
 	let operators = hcssm.getVariable(graph, 'evaluateExpression', 'operators').value
 
 	// let j = graph['lexVars']['j']
 	// let operators = graph['lexVars']['operators']
-	return expression[i] === operators[j]
+	return expression[i1] === operators[j]
 
 }
 
@@ -117,11 +117,11 @@ var isOp = (currentState, graph, parentState) => {
 var evaluate2 = (graph, parentState, currentState) => {
 
 
-	let i = hcssm.getVariable(graph, 'root', 'iExpression').value
+	let i1 = hcssm.getVariable(graph, 'root', 'i1').value
 	let expression = hcssm.getVariable(graph, 'root', 'expression').value
 
 	// let input = graph['input']
-	hcssm.setVariable(graph, 'evaluateExpression', 'b', expression[i])
+	hcssm.setVariable(graph, 'evaluateExpression', 'b', expression[i1])
 
 	// graph['operationVars']['b'] = input[i]
 
@@ -221,7 +221,7 @@ var evaluate = (currentState, graph, parentState) => {
 
 var ignoreOp2 = (graph, parentState, currentState) => {
 
-	let i = hcssm.getVariable(graph, 'root', 'iExpression').value
+	let i1 = hcssm.getVariable(graph, 'root', 'i1').value
 	let expression = hcssm.getVariable(graph, 'root', 'expression').value
 
 	let j = hcssm.getVariable(graph, 'evaluateExpression', 'j').value
@@ -239,7 +239,7 @@ var ignoreOp2 = (graph, parentState, currentState) => {
 	{
 		return false
 	}
-	if(operators.includes(expression[i]) && expression[i] !== operators[j]) {
+	if(operators.includes(expression[i1]) && expression[i1] !== operators[j]) {
 	// if(operators.includes(input[i]) && (input[i] !== operators[j]))
 	// {
 		hcssm.setVariable(graph, 'evaluateExpression', 'a', 0)
@@ -721,58 +721,10 @@ const isInputValid = (graph, parentStateName, currentStateName) => {
 	}
 	return false
 }
-const makeStates = (listOfStates) => {
+// no substring variable names
+// no duplicate variable names
+// no adding context names to index variables
 
-	/**
-	
-	{
-		'name'		: 	'parse to tokens',
-		'function'	: 	returnTrue,
-		'next'		: 	['evaluateExpression'],
-		'children'	: 	['create expression'],
-		'variableNams': ['i']
-	}
-	add in the states first as they are unique
-
-	record the variable names in the below object to know if we added that variable in or a new one
-	this way we can append each new variable name to the end of the array and therefore know what the id of it is
-
-	save as {id -> {}} not [{}]
-	enumate the key value pairs
-	stateName -> id
-	variableName -> {parentName: variableNameId}
-	how do I link the edge to it's id and not the state's id?
-	into
-	{
-		'name'		: 	'parse to tokens',
-		'function'	: 	returnTrue,
-		'next'		: 	[1],
-		'children'	: 	[2],
-		'variableNams': {i:3}
-	}
-
-	
-
-	name -> id
-
-	what if name is the same?
-	if we collect the ids how do we know what is mapped to what?
-	how do we make sure both var names don't map to the same location?
-
-	'next'		: 	{'evaluateExpression': i},
-
-	varName: set(parent names)
-	 */
-	// make a new list of states
-	let newListOfStates = listOfStates.map(state => {
-		if(!Object.keys(state).includes('value')) {
-			return state
-		}
-	})
-
-	
-	
-}
 var vars = {
 	'input' : /* passes '1 + 2 + 3 + 4',*//*'1 + 2 + 3 + 4 - 5 + 6 + 7 - 8 - 9 + 10 + 11 + 12',*//*'1+',*//*'1 +2',*/'1 + 2 + 3 + 4 - 5 + 6 * 7 - 8 - 9 + 10 * 11 + 12', // '1 '
 	// 10 - 18 - 8 - 42
@@ -809,9 +761,6 @@ var vars = {
 				'function'		: 	returnTrue,
 				'children'		: 	['parse to tokens'],//['split'],
 
-				// so we can partial match on a context name
-				// no substring variable names
-				// no adding context names to index variables
 		  		'variableNames'	: 	['arithmaticInput', 'expression']
 
 			},
@@ -829,32 +778,24 @@ var vars = {
 					'function'	: 	returnTrue,
 					'next'		: 	['evaluateExpression'],
 					'children'	: 	['create expression'],
-					'variableNams': ['i']
+					'variableNams': ['i1']
 				},
-				// have 2 states
-				// 1 for parsing the input into tokens
-				// 1 for evaluating the expression that was copied from the tokens
-				// now we can use i for 2 different senarios
-				'i':	{
-					'name'	: 'i',
-					'value'	: 0
-				},
-
-
-				// should be inside evaluate expression
-				'iExpression':	{
-					'name'	: 'iExpression',
-					'value'	: 0
-				},
-				
+					'i1':	{
+						'name'	: 'i1',
+						'value'	: 0
+					},				
 
 				// read through the input and makes an expression if one can be made
 				'create expression': {
 					'name'			: 	'create expression',
 					'function'		: 	returnTrue,
 					'children' 		: 	['number'],
-					'variableNames' : 	['token']
+					'variableNames' : 	['i2', 'token']
 				},
+					'i2':	{
+						'name'	: 'i2',
+						'value'	: 0
+					},
 					'token': {
 						'name': 'token',
 						'value': ''
