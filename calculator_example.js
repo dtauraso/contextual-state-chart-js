@@ -6,6 +6,124 @@ var hcssm = require('./contextual_state_chart')
 
 //import * as hcssm from './contextual_state_chart.js'
 var cf = require('./common_functions')
+
+// tokenizer
+const numberGetDigit = (graph, parentStateName, currentStateName) => {
+
+	const input = hcssm.getVariable(graph, 'root', 'input').value
+	let i1 = hcssm.getVariable(graph, 'root', 'i1').value
+	let token = hcssm.getVariable(graph, 'create expression', 'token').value
+
+	// console.log({input, i, token})
+	if(i >= input.length) {
+		return false
+	}
+	if(!(input[i1] >= '0' && input[i1] <= '9')) {
+		return false
+	}
+
+	hcssm.setVariable(graph, 'create expression', 'token', token + input[i1])
+	hcssm.setVariable(graph, 'root', 'i1', i1 + 1)
+
+	return true
+
+
+}
+const saveNumber = (graph, parentStateName, currentStateName) => {
+	// console.log('saveNumber')
+	let expression = hcssm.getVariable(graph, 'root', 'expression').value
+
+	// console.log({parentStateName, currentStateName, expression})
+	let token = hcssm.getVariable(graph, 'create expression', 'token').value
+	if(Number(token) === NaN) {
+		return false
+	}
+
+	expression.push(Number(token))
+	// console.log({parentStateName, currentStateName, expression})
+
+	let i1 = hcssm.getVariable(graph, 'root', 'i1').value
+	let input = hcssm.getVariable(graph, 'root', 'input').value
+
+	while(input[i1] === ' ') {i1 += 1}
+	hcssm.setVariable(graph, 'root', 'expression', expression)
+	hcssm.setVariable(graph, 'create expression', 'token', '')
+	hcssm.setVariable(graph, 'root', 'i1', i1)
+	// console.log(graph['nodeGraph2']['expression'])
+	
+	// fail
+	return true
+}
+
+const operatorGetOperator = (graph, parentStateName, currentStateName) => {
+
+	const input = hcssm.getVariable(graph, 'root', 'input').value
+	let i1 = hcssm.getVariable(graph, 'root', 'i1').value
+	let token = hcssm.getVariable(graph, 'create expression', 'token').value
+	// console.log({input, i, token})
+	if(i1 >= input.length) {
+		return false
+	}
+	const operators = ['*', '/', '+', '-']
+	if(!(operators.includes(input[i1]))) {
+		return false
+	}
+
+	hcssm.setVariable(graph, 'create expression', 'token', token + input[i1])
+	hcssm.setVariable(graph, 'root', 'i1', i1 + 1)
+
+	return true
+
+
+}
+const saveOperator = (graph, parentStateName, currentStateName) => {
+	// console.log('saveOperator')
+	let expression = hcssm.getVariable(graph, 'root', 'expression').value
+
+	// console.log({parentStateName, currentStateName, expression})
+	let token = hcssm.getVariable(graph, 'create expression', 'token').value
+	const operators = ['*', '/', '+', '-']
+
+	if(!(operators.includes(token))) {
+		return false
+	}
+	// let expression = hcssm.getVariable(graph, 'root', 'expression').value
+
+	expression.push(token)
+
+	let i1 = hcssm.getVariable(graph, 'root', 'i1').value
+	let input = hcssm.getVariable(graph, 'root', 'input').value
+
+	while(input[i1] === ' ') {i1 += 1}
+
+	hcssm.setVariable(graph, 'root', 'expression', expression)
+	hcssm.setVariable(graph, 'create expression', 'token', '')
+	hcssm.setVariable(graph, 'root', 'i1', i1)
+
+	// console.log(graph['nodeGraph2']['expression'])
+	
+	// fail
+	return true
+}
+
+
+
+const isInputValid = (graph, parentStateName, currentStateName) => {
+	
+	// will only return true after we have read in all the input and it's a valid expression
+	const input = hcssm.getVariable(graph, 'root', 'input').value
+	let i1 = hcssm.getVariable(graph, 'root', 'i1').value
+	let expression = hcssm.getVariable(graph, 'root', 'expression').value
+
+	if(i1 >= input.length) {
+		console.log({expression})
+		return true
+	}
+	return false
+}
+
+
+// evaluator
 //import * as cf from './common_functions.js'
 var isNumber = (currentState, graph, parentState) => {
 
@@ -37,10 +155,10 @@ const getA2 = (graph, parentState, currentState) => {
 	// all chains start with this function
 
 
-	let i1 = hcssm.getVariable(graph, 'root', 'i1').value
+	let i2 = hcssm.getVariable(graph, 'root', 'i2').value
 	let expression = hcssm.getVariable(graph, 'root', 'expression').value
-	hcssm.setVariable(graph, 'evaluateExpression', 'a', expression[i1])
-	hcssm.setVariable(graph, 'root', 'i1', i1 + 1)
+	hcssm.setVariable(graph, 'evaluateExpression', 'a', expression[i2])
+	hcssm.setVariable(graph, 'root', 'i2', i2 + 1)
 	
 	return true
 }
@@ -64,10 +182,10 @@ var getA = (currentState, graph, parentState) => {
 var getB2 = (graph, parentState, currentState) => {
 
 
-	let i1 = hcssm.getVariable(graph, 'root', 'i1').value
+	let i2 = hcssm.getVariable(graph, 'root', 'i2').value
 	let expression = hcssm.getVariable(graph, 'root', 'expression').value
-	hcssm.setVariable(graph, 'evaluateExpression', 'b', expression[i1])
-	hcssm.setVariable(graph, 'root', 'i1', i1 + 1)
+	hcssm.setVariable(graph, 'evaluateExpression', 'b', expression[i2])
+	hcssm.setVariable(graph, 'root', 'i2', i2 + 1)
 
 	
 	return true
@@ -91,14 +209,14 @@ var isOp2 = (graph, parentState, currentState) => {
 	// check current operand with jth operand
 	// let i = graph['i']
 	// let input = graph['input']
-	let i1 = hcssm.getVariable(graph, 'root', 'i1').value
+	let i2 = hcssm.getVariable(graph, 'root', 'i2').value
 	let expression = hcssm.getVariable(graph, 'root', 'expression').value
 	let j = hcssm.getVariable(graph, 'evaluateExpression', 'j').value
 	let operators = hcssm.getVariable(graph, 'evaluateExpression', 'operators').value
 
 	// let j = graph['lexVars']['j']
 	// let operators = graph['lexVars']['operators']
-	return expression[i1] === operators[j]
+	return expression[i2] === operators[j]
 
 }
 
@@ -117,11 +235,11 @@ var isOp = (currentState, graph, parentState) => {
 var evaluate2 = (graph, parentState, currentState) => {
 
 
-	let i1 = hcssm.getVariable(graph, 'root', 'i1').value
+	let i2 = hcssm.getVariable(graph, 'root', 'i2').value
 	let expression = hcssm.getVariable(graph, 'root', 'expression').value
 
 	// let input = graph['input']
-	hcssm.setVariable(graph, 'evaluateExpression', 'b', expression[i1])
+	hcssm.setVariable(graph, 'evaluateExpression', 'b', expression[i2])
 
 	// graph['operationVars']['b'] = input[i]
 
@@ -143,7 +261,7 @@ var evaluate2 = (graph, parentState, currentState) => {
 	// graph['operationVars']['a'] = operations[operators[j]] (a, b)
 	// graph['operationVars']['b'] = 0
 	// hcssm.setVariable(graph, 'root', 'iExpression', i + 1)
-	i += 1
+	i2 += 1
 	// graph['i'] += 1
 
 	let strA = hcssm.getVariable(graph, 'evaluateExpression', 'a').value
@@ -152,13 +270,13 @@ var evaluate2 = (graph, parentState, currentState) => {
 
 	// let chainLength = graph['operationVars']['chainLength']
 
-	let beforeTheChain = expression.slice(0, i - 2)
+	let beforeTheChain = expression.slice(0, i2 - 2)
 	// graph['input'].slice(0, i - 2)
 
 	let beforeTheChainLen = beforeTheChain.length
 	let theChain = strA
 
-	let afterTheChain = expression.slice(i + 1, expression.length)
+	let afterTheChain = expression.slice(i2 + 1, expression.length)
 
 	expression = beforeTheChain
 	// graph['input'] = beforeTheChain
@@ -169,7 +287,7 @@ var evaluate2 = (graph, parentState, currentState) => {
 		expression.push(afterTheChain[k])
 		// graph['input'].push(afterTheChain[k])
 	}
-	hcssm.setVariable(graph, 'root', 'iExpression', beforeTheChainLen)
+	hcssm.setVariable(graph, 'root', 'i2', beforeTheChainLen)
 	// graph['i'] = beforeTheChainLen
 
 	return true
@@ -221,7 +339,7 @@ var evaluate = (currentState, graph, parentState) => {
 
 var ignoreOp2 = (graph, parentState, currentState) => {
 
-	let i1 = hcssm.getVariable(graph, 'root', 'i1').value
+	let i2 = hcssm.getVariable(graph, 'root', 'i2').value
 	let expression = hcssm.getVariable(graph, 'root', 'expression').value
 
 	let j = hcssm.getVariable(graph, 'evaluateExpression', 'j').value
@@ -239,7 +357,7 @@ var ignoreOp2 = (graph, parentState, currentState) => {
 	{
 		return false
 	}
-	if(operators.includes(expression[i1]) && expression[i1] !== operators[j]) {
+	if(operators.includes(expression[i2]) && expression[i2] !== operators[j]) {
 	// if(operators.includes(input[i]) && (input[i] !== operators[j]))
 	// {
 		hcssm.setVariable(graph, 'evaluateExpression', 'a', 0)
@@ -273,13 +391,13 @@ var ignoreOp = (currentState, graph, parentState) => {
 
 var endOfInput2 = (graph, parentState, currentState) => {
 
-	let i = hcssm.getVariable(graph, 'root', 'iExpression').value
+	let i2 = hcssm.getVariable(graph, 'root', 'i2').value
 	let expression = hcssm.getVariable(graph, 'root', 'expression').value
 
 	// let i = graph['i']
 	// let input = graph['input']
 
-	return i >= expression.length
+	return i2 >= expression.length
 }
 
 
@@ -608,119 +726,6 @@ expression ->
 
 // }
 
-const numberGetDigit = (graph, parentStateName, currentStateName) => {
-
-	const input = hcssm.getVariable(graph, 'root', 'input').value
-	let i = hcssm.getVariable(graph, 'root', 'i0').value
-	let token = hcssm.getVariable(graph, 'create expression', 'token').value
-
-	// console.log({input, i, token})
-	if(i >= input.length) {
-		return false
-	}
-	if(!(input[i] >= '0' && input[i] <= '9')) {
-		return false
-	}
-
-	hcssm.setVariable(graph, 'create expression', 'token', token + input[i])
-	hcssm.setVariable(graph, 'root', 'i0', i + 1)
-
-	return true
-
-
-}
-const saveNumber = (graph, parentStateName, currentStateName) => {
-	// console.log('saveNumber')
-	let expression = hcssm.getVariable(graph, 'root', 'expression').value
-
-	// console.log({parentStateName, currentStateName, expression})
-	let token = hcssm.getVariable(graph, 'create expression', 'token').value
-	if(Number(token) === NaN) {
-		return false
-	}
-
-	expression.push(Number(token))
-	// console.log({parentStateName, currentStateName, expression})
-
-	let i = hcssm.getVariable(graph, 'root', 'i0').value
-	let input = hcssm.getVariable(graph, 'root', 'input').value
-
-	while(input[i] === ' ') {i += 1}
-	hcssm.setVariable(graph, 'root', 'expression', expression)
-	hcssm.setVariable(graph, 'create expression', 'token', '')
-	hcssm.setVariable(graph, 'root', 'i0', i)
-	// console.log(graph['nodeGraph2']['expression'])
-	
-	// fail
-	return true
-}
-
-const operatorGetOperator = (graph, parentStateName, currentStateName) => {
-
-	const input = hcssm.getVariable(graph, 'root', 'input').value
-	let i = hcssm.getVariable(graph, 'root', 'i0').value
-	let token = hcssm.getVariable(graph, 'create expression', 'token').value
-	// console.log({input, i, token})
-	if(i >= input.length) {
-		return false
-	}
-	const operators = ['*', '/', '+', '-']
-	if(!(operators.includes(input[i]))) {
-		return false
-	}
-
-	hcssm.setVariable(graph, 'create expression', 'token', token + input[i])
-	hcssm.setVariable(graph, 'root', 'i0', i + 1)
-
-	return true
-
-
-}
-const saveOperator = (graph, parentStateName, currentStateName) => {
-	// console.log('saveOperator')
-	let expression = hcssm.getVariable(graph, 'root', 'expression').value
-
-	// console.log({parentStateName, currentStateName, expression})
-	let token = hcssm.getVariable(graph, 'create expression', 'token').value
-	const operators = ['*', '/', '+', '-']
-
-	if(!(operators.includes(token))) {
-		return false
-	}
-	// let expression = hcssm.getVariable(graph, 'root', 'expression').value
-
-	expression.push(token)
-
-	let i = hcssm.getVariable(graph, 'root', 'i0').value
-	let input = hcssm.getVariable(graph, 'root', 'input').value
-
-	while(input[i] === ' ') {i += 1}
-
-	hcssm.setVariable(graph, 'root', 'expression', expression)
-	hcssm.setVariable(graph, 'create expression', 'token', '')
-	hcssm.setVariable(graph, 'root', 'i0', i)
-
-	// console.log(graph['nodeGraph2']['expression'])
-	
-	// fail
-	return true
-}
-
-
-
-const isInputValid = (graph, parentStateName, currentStateName) => {
-	
-	// will only return true after we have read in all the input and it's a valid expression
-	const input = hcssm.getVariable(graph, 'root', 'input').value
-	let i = hcssm.getVariable(graph, 'root', 'i0').value
-	let expression = hcssm.getVariable(graph, 'root', 'expression').value
-
-	if(i >= input.length) {
-		console.log({expression})
-		return true
-	}
-	return false
-}
 // no substring variable names
 // no duplicate variable names
 // no adding context names to index variables
