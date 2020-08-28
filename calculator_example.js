@@ -8,6 +8,8 @@ var hcssm = require('./contextual_state_chart')
 var cf = require('./common_functions')
 
 // tokenizer
+
+// saveOperator
 const numberGetDigit = (graph, parentStateName, currentStateName) => {
 
 	const input = hcssm.getVariable(graph, 'root', 'input').value
@@ -795,12 +797,9 @@ var vars = {
 					'name'			: 	'create expression',
 					'function'		: 	returnTrue,
 					'children' 		: 	['number'],
-					'variableNames' : 	['i2', 'token']
+					'variableNames' : 	['token']
 				},
-					'i2':	{
-						'name'	: 'i2',
-						'value'	: 0
-					},
+
 					'token': {
 						'name': 'token',
 						'value': ''
@@ -845,91 +844,94 @@ var vars = {
 							'function'	: 	saveOperator,
 						},
 
-			'evaluateExpression': {
-				'name'		: 	'evaluateExpression',
-				'function'	: 	returnTrue,
-				'next'		: 	['inputHas1Value'/*,'evaluateExpression'*/],
-				'children'	: 	['a0'],
-				'variableNames':['a', 'b', 'operators', 'j', 'operatorFunctions']
-			},
+				'evaluateExpression': {
+					'name'		: 	'evaluateExpression',
+					'function'	: 	returnTrue,
+					'next'		: 	['inputHas1Value'/*,'evaluateExpression'*/],
+					'children'	: 	['a0'],
+					'variableNames':['i2', 'a', 'b', 'operators', 'j', 'operatorFunctions']
+				},
+					'i2': {
+						'name': 'i2',
+						'value' : 0
+					},
+					'a': {
+						'name': 'a',
+						'value' : 0
+					},
+					'b': {
+						'name': 'b',
+						'value' : 0
+					},
+					'operators': {
+						'name': 'operators',
+						'value': ['*', '/', '-', '+']
+					},
+					'j': {
+						'name': 'j',
+						'value' : 0
+					},
+					'operatorFunctions' : {
+						'name': 'operatorFunctions',
+						'value': {'*': mult, '/': divide, '+': plus, '-': minus}
+					},
+					// get, save, increment or update the array
+					'a0': {
+						'name'		: 	'a0',
+						'function'	: 	getA2, // increment
+						'next'		: 	['resetForNextRoundOfInput', 'op', 'opIgnore']
+					},
 
-				'a': {
-					'name': 'a',
-					'value' : 0
-				},
-				'b': {
-					'name': 'b',
-					'value' : 0
-				},
-				'operators': {
-					'name': 'operators',
-					'value': ['*', '/', '-', '+']
-				},
-				'j': {
-					'name': 'j',
-					'value' : 0
-				},
-				'operatorFunctions' : {
-					'name': 'operatorFunctions',
-					'value': {'*': mult, '/': divide, '+': plus, '-': minus}
-				},
-				// get, save, increment or update the array
-				'a0': {
-					'name'		: 	'a0',
-					'function'	: 	getA2, // increment
-					'next'		: 	['resetForNextRoundOfInput', 'op', 'opIgnore']
-				},
+					'op': {
+						'name'		: 	'op',
+						'function'	: 	isOp2, // increment
+						'next'		: 	[/*'error',*/ 'b evaluate']
+					},
+					// add new step to save b?
+					// make a result variable to show the result?
+					'b evaluate': {
+						'name'		: 	'b evaluate',
+						'function'	: 	evaluate2, // updates the array
+						'next'		: 	[/*'resetForNextRoundOfInput',*/ 'a0'/*, 'opIgnore'*/]
+					},
 
-				'op': {
-					'name'		: 	'op',
-					'function'	: 	isOp2, // increment
-					'next'		: 	[/*'error',*/ 'b evaluate']
+					'opIgnore': {
+						'name'		: 	'opIgnore',
+						'function'	: 	ignoreOp2, // increment
+						'next'		: 	[/*'error',*/ 'a0'/*'valueIgnore'*/]
+					},
+
+					// 'valueIgnore': {
+					// 	'name'		: 	'valueIgnore',
+					// 	'function'	: 	parseChar,
+					// 	'next'		: 	['resetForNextRoundOfInput', 'opIgnore', 'valueIgnore validOp']
+					// },
+
+					// 'valueIgnore validOp': {
+					// 	'name'		: 	'valueIgnore validOp',
+					// 	'function'	: 	validOp,
+					// 	'next'		: 	['op']
+					// },
+
+					// 'error': {
+					// 	'name'		: 	'error',
+					// 	'function'	: 	noMoreInput
+					// },
+
+					'resetForNextRoundOfInput': {
+						'name'		: 	'resetForNextRoundOfInput',
+						'function'	: 	resetForNextRound,
+						'next'		: 	['endOfEvaluating', 'a0']
+					},
+					'endOfEvaluating': {
+						'name'		: 	'endOfEvaluating',
+						'function'	: 	returnTrue
+					},
+				'inputHas1Value': {
+					'name'		: 	'inputHas1Value',
+					'function'	: 	showAndExit,
+
 				},
-				// add new step to save b?
-				// make a result variable to show the result?
-				'b evaluate': {
-					'name'		: 	'b evaluate',
-					'function'	: 	evaluate2, // updates the array
-					'next'		: 	[/*'resetForNextRoundOfInput',*/ 'a0'/*, 'opIgnore'*/]
-				},
-
-				'opIgnore': {
-					'name'		: 	'opIgnore',
-					'function'	: 	ignoreOp2, // increment
-					'next'		: 	[/*'error',*/ 'a0'/*'valueIgnore'*/]
-				},
-
-				// 'valueIgnore': {
-				// 	'name'		: 	'valueIgnore',
-				// 	'function'	: 	parseChar,
-				// 	'next'		: 	['resetForNextRoundOfInput', 'opIgnore', 'valueIgnore validOp']
-				// },
-
-				// 'valueIgnore validOp': {
-				// 	'name'		: 	'valueIgnore validOp',
-				// 	'function'	: 	validOp,
-				// 	'next'		: 	['op']
-				// },
-
-				// 'error': {
-				// 	'name'		: 	'error',
-				// 	'function'	: 	noMoreInput
-				// },
-
-				'resetForNextRoundOfInput': {
-					'name'		: 	'resetForNextRoundOfInput',
-					'function'	: 	resetForNextRound,
-					'next'		: 	['endOfEvaluating', 'a0']
-				},
-				'endOfEvaluating': {
-					'name'		: 	'endOfEvaluating',
-					'function'	: 	returnTrue
-				},
-			'inputHas1Value': {
-				'name'		: 	'inputHas1Value',
-				'function'	: 	showAndExit,
-
-			},
 		},
 
 	'parsingChecks' : parsingChecks
