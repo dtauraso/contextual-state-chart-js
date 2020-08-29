@@ -1,4 +1,4 @@
-
+// variables are implemented differently here. variables are keys
 exports.getVariable = (graph, parentStateName, variableName) => {
 
     // The parent state should only be linked to one variable name at a time
@@ -18,32 +18,37 @@ exports.getVariable = (graph, parentStateName, variableName) => {
     }
     let variable = null
 
-    let variableNameIsInCellVariableNamesCount = 0
-    let found = false
+	// console.log(cell.variableNames[variableName], cell.variableNames[variableName] !== undefined)
+	if(cell.variableNames[variableName] !== undefined) {
+		variable = graph['nodeGraph2'][variableName]
+	}
+    // let variableNameIsInCellVariableNamesCount = 0
+    // let found = false
+	// console.log(cell)
+    // cell.variableNames.forEach(cellVariableName => {
 
-    cell.variableNames.forEach(cellVariableName => {
+	// 	console.log(cellVariableName, cellVariableName.search(variableName))
+	// 	// this doesn't work if 1 vaiable name is a substring of the one we are loking for
+    //     if(cellVariableName.search(variableName) === -1) {
+    //         return null
+    //     }
 
-		// this doesn't work if 1 vaiable name is a substring of the one we are loking for
-        if(cellVariableName.search(variableName) === -1) {
-            return null
-        }
+    //     variableNameIsInCellVariableNamesCount += 1
+	// 	found = true
+	// 	// console.log(cellVariableName, Object.keys(graph['nodeGraph2']))
+	// 	variable = graph['nodeGraph2'][cellVariableName]
+	// 	// console.log({variable})
+    // })
 
-        variableNameIsInCellVariableNamesCount += 1
-		found = true
-		// console.log(cellVariableName, Object.keys(graph['nodeGraph2']))
-		variable = graph['nodeGraph2'][cellVariableName]
-		// console.log({variable})
-    })
+    // if(variableNameIsInCellVariableNamesCount > 1) {
+    //     console.log(`You cannot have more than 1 variable name that contains |${variableName}|`)
+    //     return null
+    // }
+    // if(!found) {
+    //     console.log(`A variable similarly called ${variableName} may exist but there is no link from |${parentStateName}| to |${variableName}|`)
+    //     return null
 
-    if(variableNameIsInCellVariableNamesCount > 1) {
-        console.log(`You cannot have more than 1 variable name that contains |${variableName}|`)
-        return null
-    }
-    if(!found) {
-        console.log(`A variable similarly called ${variableName} may exist but there is no link from |${parentStateName}| to |${variableName}|`)
-        return null
-
-    }
+    // }
     if(variable === null) {
         console.log(variableName, 'doesn\'t exist')
         return null
@@ -248,7 +253,7 @@ exports.visitRedux = (graph, startState, indents) => {
     while(machineMetrics['nextStates'].length > 0)
     {
     	//console.log(i)
-        if(i == 75)
+        if(i == 79)
         {
 			console.log('we are out of states')
 			process.exit()
