@@ -84,8 +84,10 @@ exports.getIndents = (count) => {
 
 
 exports.printLevelsBounds = (ithState, graph, stateName, indents) => {
-	let ourString = graph['input']
+	let ourString = graph['nodeGraph2']['expression'].value
 	if(typeof ourString === 'object') {
+		// console.log(ourString)
+
 		ourString = ourString.join(' ')
 
 	}

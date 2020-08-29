@@ -9,15 +9,18 @@ var cf = require('./common_functions')
 
 // tokenizer
 
+// todo: fix the broken parent state -> variable name connections
+
 // saveOperator
 const numberGetDigit = (graph, parentStateName, currentStateName) => {
 
 	const input = hcssm.getVariable(graph, 'root', 'input').value
-	let i1 = hcssm.getVariable(graph, 'root', 'i1').value
+	let i1 = hcssm.getVariable(graph, 'parse to tokens', 'i1').value
 	let token = hcssm.getVariable(graph, 'create expression', 'token').value
 
+	// console.log(currentStateName)
 	// console.log({input, i, token})
-	if(i >= input.length) {
+	if(i1 >= input.length) {
 		return false
 	}
 	if(!(input[i1] >= '0' && input[i1] <= '9')) {
@@ -25,7 +28,7 @@ const numberGetDigit = (graph, parentStateName, currentStateName) => {
 	}
 
 	hcssm.setVariable(graph, 'create expression', 'token', token + input[i1])
-	hcssm.setVariable(graph, 'root', 'i1', i1 + 1)
+	hcssm.setVariable(graph, 'parse to tokens', 'i1', i1 + 1)
 
 	return true
 
@@ -42,15 +45,15 @@ const saveNumber = (graph, parentStateName, currentStateName) => {
 	}
 
 	expression.push(Number(token))
-	// console.log({parentStateName, currentStateName, expression})
+	console.log({expression})
 
-	let i1 = hcssm.getVariable(graph, 'root', 'i1').value
+	let i1 = hcssm.getVariable(graph, 'parse to tokens', 'i1').value
 	let input = hcssm.getVariable(graph, 'root', 'input').value
 
 	while(input[i1] === ' ') {i1 += 1}
 	hcssm.setVariable(graph, 'root', 'expression', expression)
 	hcssm.setVariable(graph, 'create expression', 'token', '')
-	hcssm.setVariable(graph, 'root', 'i1', i1)
+	hcssm.setVariable(graph, 'parse to tokens', 'i1', i1)
 	// console.log(graph['nodeGraph2']['expression'])
 	
 	// fail
@@ -60,7 +63,7 @@ const saveNumber = (graph, parentStateName, currentStateName) => {
 const operatorGetOperator = (graph, parentStateName, currentStateName) => {
 
 	const input = hcssm.getVariable(graph, 'root', 'input').value
-	let i1 = hcssm.getVariable(graph, 'root', 'i1').value
+	let i1 = hcssm.getVariable(graph, 'parse to tokens', 'i1').value
 	let token = hcssm.getVariable(graph, 'create expression', 'token').value
 	// console.log({input, i, token})
 	if(i1 >= input.length) {
@@ -72,12 +75,11 @@ const operatorGetOperator = (graph, parentStateName, currentStateName) => {
 	}
 
 	hcssm.setVariable(graph, 'create expression', 'token', token + input[i1])
-	hcssm.setVariable(graph, 'root', 'i1', i1 + 1)
+	hcssm.setVariable(graph, 'parse to tokens', 'i1', i1 + 1)
 
 	return true
-
-
 }
+
 const saveOperator = (graph, parentStateName, currentStateName) => {
 	// console.log('saveOperator')
 	let expression = hcssm.getVariable(graph, 'root', 'expression').value
@@ -93,14 +95,14 @@ const saveOperator = (graph, parentStateName, currentStateName) => {
 
 	expression.push(token)
 
-	let i1 = hcssm.getVariable(graph, 'root', 'i1').value
+	let i1 = hcssm.getVariable(graph, 'parse to tokens', 'i1').value
 	let input = hcssm.getVariable(graph, 'root', 'input').value
 
 	while(input[i1] === ' ') {i1 += 1}
 
 	hcssm.setVariable(graph, 'root', 'expression', expression)
 	hcssm.setVariable(graph, 'create expression', 'token', '')
-	hcssm.setVariable(graph, 'root', 'i1', i1)
+	hcssm.setVariable(graph, 'parse to tokens', 'i1', i1)
 
 	// console.log(graph['nodeGraph2']['expression'])
 	
@@ -114,7 +116,7 @@ const isInputValid = (graph, parentStateName, currentStateName) => {
 	
 	// will only return true after we have read in all the input and it's a valid expression
 	const input = hcssm.getVariable(graph, 'root', 'input').value
-	let i1 = hcssm.getVariable(graph, 'root', 'i1').value
+	let i1 = hcssm.getVariable(graph, 'parse to tokens', 'i1').value
 	let expression = hcssm.getVariable(graph, 'root', 'expression').value
 
 	if(i1 >= input.length) {
@@ -126,6 +128,16 @@ const isInputValid = (graph, parentStateName, currentStateName) => {
 
 
 // evaluator
+/*
+root
+	input
+	expression
+
+parse to tokens
+	i1
+create expression
+	token
+*/
 //import * as cf from './common_functions.js'
 var isNumber = (currentState, graph, parentState) => {
 
@@ -763,16 +775,18 @@ var vars = {
 			variableNames
 			value
 			*/
+
+
 			'root': {
 				'name'			: 	'root',
 				'function'		: 	returnTrue,
 				'children'		: 	['parse to tokens'],//['split'],
 
-		  		'variableNames'	: 	['arithmaticInput', 'expression']
+		  		'variableNames'	: 	['input', 'expression']
 
 			},
-				'arithmaticInput': {
-					'name' 		: 	'arithmaticInput',
+				'input': {
+					'name' 		: 	'input',
 					'value'		: 	'1 + 2 + 3 + 4 - 5 + 6 * 7 - 8 - 9 + 10 * 11 + 12'
 				},
 				'expression': {
@@ -785,7 +799,7 @@ var vars = {
 					'function'	: 	returnTrue,
 					'next'		: 	['evaluateExpression'],
 					'children'	: 	['create expression'],
-					'variableNams': ['i1']
+					'variableNames': ['i1']
 				},
 					'i1':	{
 						'name'	: 'i1',
