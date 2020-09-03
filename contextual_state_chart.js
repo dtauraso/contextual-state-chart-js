@@ -142,7 +142,10 @@ exports.goDown1Level = (graph, machineMetrics, stateMetrics) => {
 
 	let currentState = stateMetrics['winningStateName']
 	let currentStateObject = graph['nodeGraph2'][currentState]
-				
+	// for nfa, we can't attach any state to a parent if that state doesn't link to the parent
+	// avoid crossing the timelines and delete timeline if it tries to cross
+	// if a next state is in a different timeline, we run it and delete the timeiine we are on
+	// the state is "touched" but not linked up after being run
 	machineMetrics['parent'] = new ListNode(currentStateObject.name, 0, machineMetrics['parent'])
 	machineMetrics['indents'] += 1
 	machineMetrics['nextStates'] = graph['nodeGraph2'][currentState]['children']
@@ -266,6 +269,7 @@ exports.visitRedux = (graph, startState, indents) => {
 		}
 		// if graph['nodeGraph2'][ machineMetrics['parent'] or the child ]['childrenAreParallel']
 			// stateMetrics = {passes: [], winningStateName: []}
+
 		// machine will stop running if all have failed(there must be more than 0 states for this to be possible) or error state runs
 		// loop ends after the first state passes
 		machineMetrics['nextStates'].forEach(nextState => {
