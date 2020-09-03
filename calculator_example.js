@@ -295,8 +295,9 @@ var evaluate2 = (graph, parentState, currentState) => {
 		// graph['input'].push(afterTheChain[k])
 	}
 	hcssm.setVariable(graph, 'evaluateExpression', 'i2', beforeTheChainLen)
+	hcssm.setVariable(graph, 'root', 'expression', expression)
 	// graph['i'] = beforeTheChainLen
-
+	// console.log(hcssm.getVariable(graph, 'root', 'expression').value)
 	return true
 }
 
@@ -369,6 +370,7 @@ var ignoreOp2 = (graph, parentState, currentState) => {
 	// if(operators.includes(input[i]) && (input[i] !== operators[j]))
 	// {
 		hcssm.setVariable(graph, 'evaluateExpression', 'a', 0)
+		hcssm.setVariable(graph, 'evaluateExpression', 'i2', i2 + 1)
 		// graph['operationVars']['a'] = 0
 		return true
 	}
@@ -931,9 +933,10 @@ var vars = {
 						'next'		: 	['a0']
 					},
 
+					// some of this is wrong
 					'resetForNextRoundOfInput': {
 						'name'		: 	'resetForNextRoundOfInput',
-						'function'	: 	resetForNextRound,
+						'function'	: 	resetForNextRound2,
 						'next'		: 	['endOfEvaluating', 'a0']
 					},
 					'endOfEvaluating': {
@@ -942,7 +945,7 @@ var vars = {
 					},
 				'inputHas1Value': {
 					'name'		: 	'inputHas1Value',
-					'function'	: 	showAndExit,
+					'function'	: 	showAndExit2,
 
 				},
 		},

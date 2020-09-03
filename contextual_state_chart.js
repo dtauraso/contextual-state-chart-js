@@ -96,7 +96,7 @@ exports.printLevelsBounds = (ithState, graph, stateName, indents) => {
 		ourString = ourString.join(' ')
 
 	}
-	console.log(`Round #: ${ithState} ${exports.getIndents(indents)} | state name = '${stateName}' | level = ${indents} | function = ${graph['nodeGraph2'][stateName]['function'].name} | a = ${graph['operationVars']['a']} | expression = ${ourString}\n`)
+	console.log(`Round #: ${ithState} ${exports.getIndents(indents)} | state name = '${stateName}' | level = ${indents} | function = ${graph['nodeGraph2'][stateName]['function'].name} | a = ${graph['nodeGraph2']['a'].value} | expression = ${ourString}\n`)
 }
 
 exports.printVarStore = (graph) => {
@@ -113,7 +113,7 @@ exports.visitNode = (graph, nextState, stateMetrics, parentStateHead) => {
 		return stateMetrics
 	}
 	// last round was a pass
-	if(stateMetrics['passes']) {
+	if(stateMetrics['passes']) { // and the state run isn't a parallel state
 		return stateMetrics
 	}
 	let state =  graph['nodeGraph2'][nextState]
@@ -253,7 +253,7 @@ exports.visitRedux = (graph, startState, indents) => {
     while(machineMetrics['nextStates'].length > 0)
     {
     	//console.log(i)
-        if(i == 79)
+        if(i == 110)
         {
 			console.log('we are out of states')
 			process.exit()
@@ -264,6 +264,8 @@ exports.visitRedux = (graph, startState, indents) => {
 			passes: false,
 			winningStateName: ''
 		}
+		// if graph['nodeGraph2'][ machineMetrics['parent'] or the child ]['childrenAreParallel']
+			// stateMetrics = {passes: [], winningStateName: []}
 		// machine will stop running if all have failed(there must be more than 0 states for this to be possible) or error state runs
 		// loop ends after the first state passes
 		machineMetrics['nextStates'].forEach(nextState => {
@@ -278,6 +280,8 @@ exports.visitRedux = (graph, startState, indents) => {
 		// 	console.log(user[userAttribute])
 		// })
 		// console.log({machine_metrics, state_metrics, graph})
+		// run 1 time for the dfa
+		// run n times for the nfa(make a new branch when i > 0)
 		// current state passes
 		if(stateMetrics['passes']) {
 			// console.log({mm: machineMetrics})
