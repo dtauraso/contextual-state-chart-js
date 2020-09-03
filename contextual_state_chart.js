@@ -154,6 +154,9 @@ exports.goDown1Level = (graph, machineMetrics, stateMetrics) => {
 		// is the timeline aware of the states it's supposed to run?
 		// 2 different timelines need to acces the same state but the state can only be run 1 time and only after it's been visited by both timelines
 		// credit for successfulling running the state must be attributed to the timeline the state comes from
+		// {[nextStateName]: {'active parents': [], actualParents: {}}}
+		// active parents intersect 'actualParents' =  active parents to receive credit for running the next state
+		// only thing the timelines array will have in common with the doubly nested next state names is index value
 	machineMetrics['parent'] = new ListNode(currentStateObject.name, 0, machineMetrics['parent'])
 	machineMetrics['indents'] += 1
 	machineMetrics['nextStates'] = graph['nodeGraph2'][currentState]['children']
