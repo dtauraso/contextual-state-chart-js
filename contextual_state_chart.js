@@ -157,6 +157,7 @@ exports.goDown1Level = (graph, machineMetrics, stateMetrics) => {
 		// {[nextStateName]: {'active parents': [], actualParents: {}}}
 		// active parents intersect 'actualParents' =  active parents to receive credit for running the next state
 		// only thing the timelines array will have in common with the doubly nested next state names is index value
+		// deep engineering problem for the starbucks state chart test program
 	machineMetrics['parent'] = new ListNode(currentStateObject.name, 0, machineMetrics['parent'])
 	machineMetrics['indents'] += 1
 	machineMetrics['nextStates'] = graph['nodeGraph2'][currentState]['children']
