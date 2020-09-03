@@ -150,6 +150,7 @@ exports.goDown1Level = (graph, machineMetrics, stateMetrics) => {
 	// state run threshold
 	// chip away at the threshold without running the state
 	// what hapens if the wrong timeline decreases the threshold to 0 instead of the correct timeline?
+		// the state still needs to be run now and the proper timelines next states...
 	machineMetrics['parent'] = new ListNode(currentStateObject.name, 0, machineMetrics['parent'])
 	machineMetrics['indents'] += 1
 	machineMetrics['nextStates'] = graph['nodeGraph2'][currentState]['children']
