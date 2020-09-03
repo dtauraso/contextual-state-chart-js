@@ -146,6 +146,10 @@ exports.goDown1Level = (graph, machineMetrics, stateMetrics) => {
 	// avoid crossing the timelines and delete timeline if it tries to cross
 	// if a next state is in a different timeline, we run it and delete the timeiine we are on
 	// the state is "touched" but not linked up after being run
+	// this way 1 timeline can influence a state from another timeline
+	// state run threshold
+	// chip away at the threshold without running the state
+	// what hapens if the wrong timeline decreases the threshold?
 	machineMetrics['parent'] = new ListNode(currentStateObject.name, 0, machineMetrics['parent'])
 	machineMetrics['indents'] += 1
 	machineMetrics['nextStates'] = graph['nodeGraph2'][currentState]['children']
