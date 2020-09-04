@@ -334,3 +334,33 @@ exports.visitRedux = (graph, startState, indents) => {
         i += 1
     }
 }
+/*
+
+
+bottom = {parent names: bottom object}
+
+timelines for next states
+assumes each state has a parents: {parentNames} attributes
+parent : {
+	"next state name": {
+		threshold: 2,
+		count: 3
+		parentIsAlsoParentInStateChart: false,
+		timelineWeAreIntrudingOn: correctTimelineParentName
+	}
+}
+
+edges
+{edgeName: "next state name",
+isFromCorrecttimeline: 0}
+
+is the parent a parent of the state in the state chart?
+stateChart["next state name"]["parents"][parent] === undefined
+
+
+how to we find out what timeline and what state to rerun
+in the editor provide the timeline tree for all visible timelines
+	if the user wants to connect to a state in a different timeline they have to click on the state
+	nearest answestor algorithm is now only considering the number of visible timelines
+O(# of timelines the user is paying attention to)
+*/
