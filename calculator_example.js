@@ -947,6 +947,7 @@ var vars = {
 					'name'		: 	'inputHas1Value',
 					'function'	: 	showAndExit2,
 
+					
 				},
 		},
 
