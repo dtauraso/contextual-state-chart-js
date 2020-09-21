@@ -363,4 +363,7 @@ in the editor provide the timeline tree for all visible timelines
 	if the user wants to connect to a state in a different timeline they have to click on the state
 	nearest answestor algorithm is now only considering the number of visible timelines
 O(# of timelines the user is paying attention to)
+
+edge (stateName, if the timeline of that state is different from this one then timelineName)
+edges: [edge]
 */
