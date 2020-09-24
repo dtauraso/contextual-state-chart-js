@@ -366,4 +366,20 @@ O(# of timelines the user is paying attention to)
 
 edge (stateName, if the timeline of that state is different from this one then timelineName)
 edges: [edge]
+
+
+
+parentTree = {
+	'bottom': {
+		parent12: {'edges': [a, b, c]]
+		parent2: {'timeline': {state1: parent12}, 'edges': [state1, state2], 'winning states': [state1, state2]},
+	}
+	'graph': {
+		parent3: {nextParent: null, prevParentCount: 2, ithChild: 3},
+		parent2: {nextParent: parent3, ithChild: 1},
+		parent12: {nextParent: parent3, ithChild: 1}
+	}
+
+}
+
 */
