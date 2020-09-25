@@ -96,7 +96,8 @@ exports.printLevelsBounds = (ithState, graph, stateName, indents) => {
 		ourString = ourString.join(' ')
 
 	}
-	console.log(`Round #: ${ithState} ${exports.getIndents(indents)} | state name = '${stateName}' | level = ${indents} | function = ${graph['nodeGraph2'][stateName]['function'].name} | a = ${graph['nodeGraph2']['a'].value} | expression = ${ourString}\n`)
+	let j = graph['nodeGraph2']['j'].value
+	console.log(`Round #: ${ithState} ${exports.getIndents(indents)} | state name = '${stateName}' | level = ${indents} | function = ${graph['nodeGraph2'][stateName]['function'].name} | operator = \'${graph['nodeGraph2']['operators'].value[j]}\' | a = ${graph['nodeGraph2']['a'].value} | expression = ${ourString}\n`)
 }
 
 exports.printVarStore = (graph) => {
@@ -221,7 +222,7 @@ exports.backtrack = (graph, machineMetrics) => {
 		}
 		else {
 			// the first round of children will be failed children
-			console.log(`${exports.getIndents(machineMetrics['indents'])} ${count === 0? 'failed': 'passed'} children ${children.join(', ')}`)
+			console.log(`${exports.getIndents(machineMetrics['indents'])} ${count === 0? 'failed': 'passed'} children ${children}`)
 
 		}
 
@@ -268,7 +269,7 @@ exports.visitRedux = (graph, startState, indents) => {
     while(machineMetrics['nextStates'].length > 0)
     {
     	//console.log(i)
-        if(i == 110)
+        if(i == 170)
         {
 			console.log('we are out of states')
 			process.exit()
@@ -371,13 +372,13 @@ edges: [edge]
 
 parentTree = {
 	'bottom': {
-		parent12: {'edges': [a, b, c]]
+		parent12: {'edges': [a, state1, c]]
 		parent2: {'timeline': {state1: parent12}, 'edges': [state1, state2], 'winning states': [state1, state2]},
 	}
 	'graph': {
 		parent3: {nextParent: null, prevParentCount: 2, ithChild: 3},
-		parent2: {nextParent: parent3, ithChild: 1},
-		parent12: {nextParent: parent3, ithChild: 1}
+		parent2: {nextParent: parent3, prevParentCount: 1, ithChild: 1},
+		parent12: {nextParent: parent3, prevParentCount: 1, ithChild: 1}
 	}
 
 }

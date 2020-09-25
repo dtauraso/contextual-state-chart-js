@@ -221,7 +221,13 @@ var isOp2 = (graph, parentState, currentState) => {
 
 	// let j = graph['lexVars']['j']
 	// let operators = graph['lexVars']['operators']
-	return expression[i2] === operators[j]
+	if(expression[i2] === operators[j]) {
+		hcssm.setVariable(graph, 'evaluateExpression', 'i2', i2 + 1)
+		return true
+
+	}
+	return false
+	// increment
 
 }
 
@@ -252,7 +258,7 @@ var evaluate2 = (graph, parentState, currentState) => {
 
 
 	let a = hcssm.getVariable(graph, 'evaluateExpression', 'a').value
-	let b = hcssm.getVariable(graph, 'evaluateExpression', 'a').value
+	let b = hcssm.getVariable(graph, 'evaluateExpression', 'b').value
 
 
 	// let j = graph['lexVars']['j']
@@ -265,10 +271,12 @@ var evaluate2 = (graph, parentState, currentState) => {
 	hcssm.setVariable(graph, 'evaluateExpression', 'a', operations[operators[j]] (a, b))
 	hcssm.setVariable(graph, 'evaluateExpression', 'b', 0)
 
+	// update array to account for the changes
+	// console.log(i2)
 	// graph['operationVars']['a'] = operations[operators[j]] (a, b)
 	// graph['operationVars']['b'] = 0
 	// hcssm.setVariable(graph, 'root', 'iExpression', i + 1)
-	i2 += 1
+	// i2 += 1
 	// graph['i'] += 1
 
 	let strA = hcssm.getVariable(graph, 'evaluateExpression', 'a').value
@@ -278,6 +286,7 @@ var evaluate2 = (graph, parentState, currentState) => {
 	// let chainLength = graph['operationVars']['chainLength']
 
 	let beforeTheChain = expression.slice(0, i2 - 2)
+	// console.log(beforeTheChain)
 	// graph['input'].slice(0, i - 2)
 
 	let beforeTheChainLen = beforeTheChain.length
@@ -460,7 +469,6 @@ var isWhiteSpace = (currentState, graph) => {
 
 
 var mult = (a, b) => {
-
 	return a * b
 }
 var divide = (a, b) => {
@@ -937,12 +945,13 @@ var vars = {
 					'resetForNextRoundOfInput': {
 						'name'		: 	'resetForNextRoundOfInput',
 						'function'	: 	resetForNextRound2,
-						'next'		: 	['endOfEvaluating', 'a0']
+						'next'		: 	[/*'endOfEvaluating'*/'inputHas1Value', 'a0']
 					},
-					'endOfEvaluating': {
-						'name'		: 	'endOfEvaluating',
-						'function'	: 	returnTrue
-					},
+					// should only return true if we can't evaluate anymore
+					// 'endOfEvaluating': {
+					// 	'name'		: 	'endOfEvaluating',
+					// 	'function'	: 	returnTrue
+					// },
 				'inputHas1Value': {
 					'name'		: 	'inputHas1Value',
 					'function'	: 	showAndExit2,
