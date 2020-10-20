@@ -373,7 +373,7 @@ edges: [edge]
 parentTree = {
 	'bottom': {
 		parent12: {'edges': [a, state1, c]]
-		parent2: {'timeline': {state1: parent12}, 'edges': [state1, state2], 'winning states': [state1, state2]},
+		parent2: {'different timeline': {state1: parent12}, 'edges': [state1, state2], 'winning states': [state1, state2], 'indents': 0},
 	}
 	'graph': {
 		parent3: {nextParent: null, prevParentCount: 2, ithChild: 3},
@@ -382,5 +382,7 @@ parentTree = {
 	}
 
 }
+what if the timeline attribute is true for each node in the path?
+is the data from the 'bottom' just being lifted from the graph? if so then the data there is temporary
 
 */
