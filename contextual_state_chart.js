@@ -369,7 +369,6 @@ edge (stateName, if the timeline of that state is different from this one then t
 edges: [edge]
 
 
-
 parentTree = {
 	'bottom': {
 		parent12: {'edges': [a, state1, c]]
@@ -394,12 +393,15 @@ each state that can only run after the incomming edges get run once
 	store the incoming state names so we can check if all incoming edges have been run 1 time
 
 
+If state y has not succeeded in moving to the next state because it was unable to run any of it's next states it is a spin state
+After it moves to the next state it's no longer a spin state. What if it's next states are empty? Does the timeline get removed?
+
 t1 runs and can't run state y as prev state = '' and state y needs state x to run first
 t2 runs an succeeds
-	t2 is linked to t1 at state y, so t2 sends t1 it's state x to t1's prev state only if state y hasn't been run yet
+	t2 is linked to t1 at state y, so t2 sends t1 it's state x to t1's prev state only if state y is not a spin state
 t1 uses prev state = state x to activate it's state y
 
-What if we needed to run state y from t2 more times?
+diference between same state repeating trial runs and rerunning it after some other states?
 We can't assume any syncronized time the prevs come in from any other timeline to the timeline of consideration.
 They can come in at any time and some may come in at the same time.
 */
