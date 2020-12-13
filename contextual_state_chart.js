@@ -392,4 +392,14 @@ No threshold becuase the same incomming edge can get run over and over again wit
 at least 1 time.
 each state that can only run after the incomming edges get run once
 	store the incoming state names so we can check if all incoming edges have been run 1 time
+
+
+t1 runs and can't run state y as prev state = '' and state y needs state x to run first
+t2 runs an succeeds
+	t2 is linked to t1 at state y, so t2 sends t1 it's state x to t1's prev state only if state y hasn't been run yet
+t1 uses prev state = state x to activate it's state y
+
+What if we needed to run state y from t2 more times?
+We can't assume any syncronized time the prevs come in from any other timeline to the timeline of consideration.
+They can come in at any time and some may come in at the same time.
 */
