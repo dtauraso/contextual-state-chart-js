@@ -382,7 +382,14 @@ parentTree = {
 	}
 
 }
+The timeline is the one currently in use from the current state
+	the current state can have several timeilines connecting to it but each one will run separately
 what if the timeline attribute is true for each node in the path?
 is the data from the 'bottom' just being lifted from the graph? if so then the data there is temporary
 
+
+No threshold becuase the same incomming edge can get run over and over again without all the incomming edges getting run
+at least 1 time.
+each state that can only run after the incomming edges get run once
+	store the incoming state names so we can check if all incoming edges have been run 1 time
 */
