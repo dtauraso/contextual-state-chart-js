@@ -381,6 +381,8 @@ parentTree = {
 	}
 
 }
+How do we know we need to restart the machine vs stopping the machine after we run the end state?
+	Have a queue of each unit of data the machine uses. Once the machine has finished processing the data at each level it quits
 The timeline is the one currently in use from the current state
 	the current state can have several timeilines connecting to it but each one will run separately
 what if the timeline attribute is true for each node in the path?
@@ -404,4 +406,6 @@ t1 uses prev state = state x to activate it's state y
 diference between same state repeating trial runs and rerunning it after some other states?
 We can't assume any syncronized time the prevs come in from any other timeline to the timeline of consideration.
 They can come in at any time and some may come in at the same time.
+
+The keys for unlocking the states must come from different timelines(they define the idea of syncronizing multiple asyncronious processes at certain points in time)
 */
