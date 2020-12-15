@@ -408,4 +408,28 @@ We can't assume any syncronized time the prevs come in from any other timeline t
 They can come in at any time and some may come in at the same time.
 
 The keys for unlocking the states must come from different timelines(they define the idea of syncronizing multiple asyncronious processes at certain points in time)
+
+
+while (we have not hit the chosen end state) or (the input queue with the top state is not empty)
+	for each timeline
+		set parallel processing flag
+		for each next state
+			if we have already successfully run a state
+				if we are not doing parallel processing
+					break
+				else
+					unlock state if possible
+					run unlocked state if possible
+					any state that can be unlockd and run successfully gets to be in the next round
+			else
+				unlock state if possible
+				run unlocked state if possible
+				any state that can be unlockd and run successfully gets to be in the next round
+
+
+		for each winner
+			if the winner is in range [2, n]
+				branch wide
+			else
+				branch down
 */
