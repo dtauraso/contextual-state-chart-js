@@ -431,5 +431,6 @@ while (we have not hit the chosen end state) or (the input queue with the top st
 			if the winner is in range [2, n]
 				the winner is a sibling timeline
 			else
-				the winne is a new branch in the current timeline
+				the winne is a continuation of the current timeline at the current machine level or
+				a new branch in the current timeline that goes 1 level below the current machine level
 */
