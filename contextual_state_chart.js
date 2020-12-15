@@ -372,7 +372,11 @@ edges: [edge]
 parentTree = {
 	'bottom': {
 		parent12: {'edges': [a, state1, c]]
-		parent2: {'different timeline': {state1: parent12}, 'edges': [state1, state2], 'winning states': [state1, state2], 'indents': 0},
+		parent2: {	'different timeline': {state1: parent12},
+					'edges': [state1, state2],
+					'winning states': [state1, state2],
+					'indents': 0,
+					'current locks': ['a', 'b']},
 	}
 	'graph': {
 		parent3: {nextParent: null, prevParentCount: 2, ithChild: 3},
@@ -433,4 +437,14 @@ while (we have not hit the chosen end state) or (the input queue with the top st
 			else
 				the winne is a continuation of the current timeline at the current machine level or
 				a new branch in the current timeline that goes 1 level below the current machine level
+state = {
+	name:
+	functionName:
+	inputQueue:
+	nextStates:
+	children:
+	isVariable:
+	value:
+	isParallel:
+}
 */
