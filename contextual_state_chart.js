@@ -375,8 +375,7 @@ parentTree = {
 		parent2: {	'different timeline': {state1: parent12},
 					'edges': [state1, state2],
 					'winning states': [state1, state2],
-					'indents': 0,
-					'current locks': ['a', 'b']},
+					'indents': 0},
 	}
 	'graph': {
 		parent3: {nextParent: null, prevParentCount: 2, ithChild: 3},
@@ -446,5 +445,12 @@ state = {
 	isVariable:
 	value:
 	isParallel:
+	locks: { 	'parent a': {'state a': 0, 'locks active': []}, 
+				'parent b': {'state b': 0, 'locks active': []}}
 }
+locks:
+	deterministic:
+		a state can have n locks from only 1 timeline but only 1 lock opens the state
+	nondeterminstic:
+		a state can have n locks from n timelines and at least 1 lock per timeline for all timelines must be opened to run the state
 */
