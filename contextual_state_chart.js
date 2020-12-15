@@ -446,7 +446,7 @@ state = {
 	value:
 	isParallel:
 	locks: { 	'parent a': {'state a': 0, 'locks active': []}, 
-				'parent b': {'state b': 0, 'locks active': []}}
+				'parent b': {'state b': 0, 'locks active': []}, 'timelines unlocked': []}
 }
 locks:
 	deterministic:
