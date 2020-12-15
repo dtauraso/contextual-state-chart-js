@@ -420,16 +420,16 @@ while (we have not hit the chosen end state) or (the input queue with the top st
 				else
 					unlock state if possible
 					run unlocked state if possible
-					any state that can be unlockd and run successfully gets to be in the next round
+					any still locked state or state that can be unlocked and run successfully gets to be in the next round
 			else
 				unlock state if possible
 				run unlocked state if possible
-				any state that can be unlockd and run successfully gets to be in the next round
+				any still locked state or state that can be unlocked and run successfully gets to be in the next round
 
 
 		for each winner
 			if the winner is in range [2, n]
-				branch wide
+				the winner is a sibling timeline
 			else
-				branch down
+				the winne is a new branch in the current timeline
 */
